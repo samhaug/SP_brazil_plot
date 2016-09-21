@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+import numpy as np
+from matplotlib import pyplot as plt
+from scipy import interpolate
+import sys
+import pandas as pd
+from matplotlib.patches import Rectangle
+
+def get_values(excel_file):
+    #km_20 = pd.read_excel(excel_file,sheetname='20km')
+    #vp_1_4to9 = pd.read_excel(excel_file,sheetname='4to9_1vp')
+    vp_0_4to9 = pd.read_excel(excel_file,sheetname='4to9_0vp')
+    vp_0_0to20 = pd.read_excel(excel_file,sheetname='0to20_0vp')
+    #km_20 = km_20.values
+    #vp_1_4to9 = vp_1_4to9.values
+    vp_0_4to9 = vp_0_4to9.values
+    vp_0_0to20 = vp_0_0to20.values
+    #return km_20,vp_1_4to9,vp_0_4to9,vp_0_0to20
+    return vp_0_4to9, vp_0_0to20
+
+def plot(psi_array,title,**kwargs):
+
+    ax_grab = kwargs.get('ax_grab',False)
+    top_fig = kwargs.get('top_fig',False)
+
+    if ax_grab == False:
+        fig, ax = plt.subplots()
+    else:
+        ax = ax_grab
+
+    psi = 0.24
+    delta = 0.03
+    vs_old = psi_array[:,0]
+    rho_old = psi_array[0,:]
+    f = interpolate.interp2d(rho_old,vs_old,psi_array,kind='cubic')
+    rho_new = np.linspace(rho_old[0],rho_old[-1],num=200)
+    vs_new = np.linspace(vs_old[0],vs_old[-1],num=200)
+
+    m = f(rho_new,vs_new)
+
+    least_sq = ((m-psi)/delta)**2
+    rho = np.linspace(1,6,num=200)
+    vs = np.linspace(-1,-6,num=200)
+    rr,ss = np.meshgrid(rho,vs)
+
+    CS = ax.contour(rr,ss,least_sq,np.hstack((np.arange(0,1.2,0.2),(3,6,9))),
+                    colors=('k','k','k','k','k','k','r','r','r'),
+                    vmin=0,vmax=1.0)
+    ax.clabel(CS, fontsize=9, inline=1)
+    min_list = zip(*np.where(m == m.min()))
+
+
+    ax.set_title(title)
+    ax.set_xlabel(r'$\delta \rho$')
+    ax.set_ylabel(r'$\delta V_{S}$')
+    ax.tick_params(axis='y', labelsize=10)
+    ax.tick_params(axis='x', labelsize=10)
+    ax.set_ylim((-2.5,-1.0))
+    ax.add_patch(Rectangle((1,-2.0), 2, 2.0,alpha=0.2))
+    if top_fig == True:
+        ax.set_xlabel('')
+        ax.xaxis.set_ticklabels([])
+    return m
+
+fig,ax = plt.subplots(2,1,figsize=(7,13))
+#plt.tight_layout()
+a = get_values(sys.argv[1])
+m = plot(a[1],r'$\alpha = 0^{\circ}, \beta = 20^{\circ}$',ax_grab = ax[0],top_fig=True)
+m = plot(a[0],r'$\alpha = 4^{\circ}, \beta = 5^{\circ}$',ax_grab = ax[1])
+plt.show()
+#w,disc,amp1 = plot(amp_array,0.057,0.009)
+
+
+
+

@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+import numpy as np
+import obspy
+from matplotlib import pyplot as plt
+import sys
+import seispy
+from matplotlib import gridspec
+
+"""
+First arg: name of pickle file
+"""
+fig = plt.figure(figsize=(30,30))
+gs = gridspec.GridSpec(30,3)
+ax1 = plt.subplot(gs[0:20,0])
+ax1.set_title('T > 1s')
+ax1.grid()
+ax1.set_yticks(np.arange(57,74,5))
+ax1.tick_params(axis='y', labelsize=10)
+ax1.set_xticklabels([])
+ax2 = plt.subplot(gs[20:25,0])
+ax2.tick_params(axis='y', labelsize=10)
+ax2.set_xticklabels([])
+ax2.set_ylabel('Slowness')
+ax3 = plt.subplot(gs[25:30,0])
+ax3.set_xlim((-10,120))
+ax3.set_xlabel('Seconds after P')
+ax3.tick_params(axis='y', labelsize=10)
+ax3.tick_params(axis='x', labelsize=10)
+ax3.set_yticks(np.arange(-1.0,2.0,0.5))
+ax3.set_ylabel('Amplitude')
+
+ax4 = plt.subplot(gs[0:20,1])
+ax4.set_title('T > 2s')
+ax4.grid()
+ax4.set_xticklabels([])
+ax4.set_yticklabels([])
+ax5 = plt.subplot(gs[20:25,1])
+ax5.set_xticklabels([])
+ax5.set_yticklabels([])
+ax6 = plt.subplot(gs[25:30,1])
+ax6.set_yticklabels([])
+ax6.set_xlim((-10,120))
+ax6.set_xlabel('Seconds after P')
+ax6.tick_params(axis='x', labelsize=10)
+
+ax7 = plt.subplot(gs[0:20,2])
+ax7.set_title('T > 5s')
+ax7.grid()
+ax7.set_xticklabels([])
+ax7.set_yticklabels([])
+ax8 = plt.subplot(gs[20:25,2])
+ax8.set_xticklabels([])
+ax8.set_yticklabels([])
+ax9 = plt.subplot(gs[25:30,2])
+ax9.set_yticklabels([])
+ax9.set_xlim((-10,120))
+ax9.set_xlabel('Seconds after P')
+ax9.tick_params(axis='x', labelsize=10)
+
+st = obspy.read(sys.argv[1])
+st = seispy.filter.az_filter(st,(270,330))
+st = seispy.filter.range_filter(st,(55,90))
+st.differentiate()
+st.normalize()
+st = seispy.data.align_on_phase(st)
+
+print('first frequency')
+st.filter('lowpass',freq=1.0)
+#st = seispy.data.align_on_phase(st)
+st.normalize()
+seispy.plot.section(st,title=False,ax_grab=ax1,x_lim=(-10,120),y_lim=(55,74),
+                    )
+seispy.plot.vespagram(st,title=False,ax_grab=ax2,x_lim=(-10,120))
+seispy.plot.stack_amp(st,title=False,ax_grab=ax3)
+ax2.grid(color='w')
+
+print('second frequency')
+st.filter('lowpass',freq=0.5)
+#st = seispy.data.normalize_on_phase(st,phase=['P'])
+st.normalize()
+st = seispy.data.align_on_phase(st)
+seispy.plot.section(st,title=False,ax_grab=ax4,x_lim=(-10,120),y_lim=(55,74),
+                    )
+seispy.plot.vespagram(st,title=False,ax_grab=ax5,x_lim=(-10,120))
+seispy.plot.stack_amp(st,title=False,ax_grab=ax6)
+ax5.grid(color='w')
+
+print('third frequency')
+st.filter('lowpass',freq=0.2)
+st = seispy.data.normalize_on_phase(st,phase=['P'])
+#st = seispy.data.align_on_phase(st)
+st.normalize()
+seispy.plot.section(st,title=False,ax_grab=ax7,x_lim=(-10,120),y_lim=(55,74),
+                    )
+seispy.plot.vespagram(st,title=False,ax_grab=ax8,x_lim=(-10,120))
+seispy.plot.stack_amp(st,title=False,ax_grab=ax9)
+ax8.grid(color='w')
+
+
+
+
+
+plt.show()
+
+
+
+
+
+
+
+
+
+#a = seispy.plot.vespagram(st,title=False,slowness_tick=-0.02,x_lim(-10,120))

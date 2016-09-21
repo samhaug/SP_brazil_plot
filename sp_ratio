@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import obspy
+import seispy
+from numpy import abs
+from sys import argv
+
+st = obspy.read('st_Z.pk')
+st = seispy.convert.set_gcarc(st)
+st.differentiate()
+st = seispy.filter.gimp_filter(st)
+st = seispy.data.align_on_phase(st)
+st = seispy.data.normalize_on_phase(st,phase=['S'])
+
+#S = seispy.plot.vespagram(st,p_lim=(-5.4,5.4),p_tick=-0.2,x_lim=(480,500),
+#                          plot=False)
+#S_amp = abs(S[1,:].max()-S[1,:].min())
+
+#SP = seispy.plot.vespagram(st,p_lim=(-0.74,0.74),p_tick=-0.02,x_lim=(90,110),
+#                          plot=False)
+#SP_amp = abs(SP[-1,:].max()-SP[-1,:].min())
+
+if argv[1] == 'ratio':
+    SP = seispy.plot.vespagram(st,p_lim=(-1,1),p_tick=-0.02,x_lim=(90,110), plot=False)
+
+if argv[1] == 'plot':
+    SP = seispy.plot.vespagram(st)
+
+if argv[1] == 'section':
+    SP = seispy.plot.stack_amp(st,p_tick=-0.02)
+
+print 'Ratio', str(SP.max()-SP.min())

@@ -1,0 +1,218 @@
+#!/usr/bin/env python
+
+import numpy as np
+import obspy
+from matplotlib import pyplot as plt
+import sys
+import seispy
+from matplotlib import gridspec
+import h5py
+from multiprocessing import Pool
+
+"""
+First arg: name of pickle file
+"""
+
+def set_figure():
+    print('set_figure')
+    #vespagram fig
+    fig1 = plt.figure(figsize=(20,30))
+    gs1 = gridspec.GridSpec(30,1)
+
+    ax1 = plt.subplot(gs1[0:5,0])
+    ax1.set_xticklabels([])
+    ax1.set_yticklabels([])
+
+    ax2 = plt.subplot(gs1[5:10,0])
+    ax2.set_xticklabels([])
+    ax2.set_yticklabels([])
+
+    ax3 = plt.subplot(gs1[10:15,0])
+    ax3.set_xticklabels([])
+    ax3.set_yticklabels([])
+
+    ax4 = plt.subplot(gs1[15:20,0])
+    ax4.set_xticklabels([])
+    ax4.set_yticklabels([])
+
+    ax5 = plt.subplot(gs1[20:25,0])
+    ax5.set_xticklabels([])
+    ax5.set_yticklabels([])
+
+    ax6 = plt.subplot(gs1[25:30,0])
+    ax6.set_xticklabels([])
+    ax6.set_yticklabels([])
+
+    #section fig
+    fig2 = plt.figure(figsize=(20,30))
+    gs2 = gridspec.GridSpec(30,1)
+
+    sax1 = plt.subplot(gs2[0:5,0])
+    sax1.set_xticklabels([])
+    sax1.set_yticklabels([])
+
+    sax2 = plt.subplot(gs2[5:10,0])
+    sax2.set_xticklabels([])
+    sax2.set_yticklabels([])
+
+    sax3 = plt.subplot(gs2[10:15,0])
+    sax3.set_xticklabels([])
+    sax3.set_yticklabels([])
+
+    sax4 = plt.subplot(gs2[15:20,0])
+    sax4.set_xticklabels([])
+    sax4.set_yticklabels([])
+
+    sax5 = plt.subplot(gs2[20:25,0])
+    sax5.set_xticklabels([])
+    sax5.set_yticklabels([])
+
+    sax6 = plt.subplot(gs2[25:30,0])
+    sax6.set_xticklabels([])
+    sax6.set_yticklabels([])
+
+    return [ax1,ax2,ax3,ax4,ax5,ax6],[sax1,sax2,sax3,sax4,sax5,sax6]
+
+def import_boot_h5(name):
+
+    print('import_boot_h5')
+    f = h5py.File(name,'r')
+    return f[...]
+
+def prep_stream(st_in,ax,sax,**kwargs):
+
+    ist = kwargs.get('ist',1)
+    print('prep_stream {}'.format(str(ist)))
+    az_lim = kwargs.get('az_lim',False)
+    range_lim = kwargs.get('range_lim',False)
+    diff = kwargs.get('diff',True)
+    gimp = kwargs.get('gimp',True)
+    freq_lim = kwargs.get('freq_lim','broadband')
+    coord_list = kwargs.get('coord_list',False)
+    align = kwargs.get('align',True)
+    phase_norm = kwargs.get('phase_norm',True)
+    amp_scale = kwargs.get('amp_scale',1)
+
+    st = st_in.copy()
+
+    if az_lim != False:
+        print('    az_filter')
+        st = seispy.filter.az_filter(st,az_lim)
+    if range_lim != False:
+        print('    range_filter')
+        st = seispy.filter.range_filter(st,range_lim)
+    if diff:
+        print('    differentiate')
+        st.differentiate()
+    if freq_lim == 'broadband':
+        ax.set_ylabel('Broadband')
+        sax.set_ylabel('Broadband')
+        ax.yaxis.set_label_position("right")
+        sax.yaxis.set_label_position("right")
+        print('    Broadband frequency')
+    if type(freq_lim) == tuple:
+        st.filter('bandpass',freqmin=freq_lim[0],freqmax=freq_lim[1])
+        ax.set_ylabel('{} < f < {}'.format(str(freq_lim[0]),str(freq_lim[1])))
+        sax.set_ylabel('{} < f < {}'.format(str(freq_lim[0]),str(freq_lim[1])))
+        ax.yaxis.set_label_position("right")
+        sax.yaxis.set_label_position("right")
+        print('    Filtering {} < f < {}'.format(str(freq_lim[0]),
+                                                 str(freq_lim[1])))
+    if gimp:
+        print('    gimp_filter')
+        st = seispy.filter.gimp_filter(st)
+    if align:
+        print('    Align on phase')
+        st = seispy.data.align_on_phase(st)
+    if phase_norm:
+        print('    Phase normalization')
+        st = seispy.data.normalize_on_phase(st,phase=['S'])
+        #st.normalize()
+
+    #seispy.plot.vespagram(st,title=False,ax_grab=ax,p_lim=(-2.0,2.0))
+    sp = seispy.plot.stack_amp(st,coord_list=coord_list)
+    t = np.linspace(-10,160,num=len(sp))
+    sp[int(len(sp)/8.)::]*=amp_scale
+    #sax.axvline(10,color='r',lw=3)
+    #sax.plot(t,sp,color='k')
+    #sax.set_xlim(-10,160)
+    #sax.set_ylim(-1,1)
+    #sax.set_yticks(-1,1,0.1)
+    #sax.grid()
+    return sp
+
+def prep_wrapper(in_tuple):
+    '''
+    Wrapper to be used for parallel runs
+    '''
+    return prep_stream(*in_tuple[0],**in_tuple[1])
+
+
+
+st_in = obspy.read(sys.argv[1])
+
+ax_list,sax_list = set_figure()
+
+freq_list = [(0.05,2.0),
+              (0.05,1.0),
+              (0.05,0.9),
+              (0.05,0.8),
+              (0.05,0.7),
+              (0.05,0.6)]
+
+st_out = []
+
+p = Pool(6)
+#Make mapping list
+map_list = []
+for idx in range(len(freq_list)):
+
+   arg = (st_in,ax_list[idx],sax_list[idx])
+
+   kwarg = {'freq_lim' : freq_list[idx],
+            #'coord_list': [514,40,5440,51],
+            'coord_list': [559,43,5512,56],
+            'ist' : idx,
+            'az_lim' : (270,330),
+            'range_lim' : (55,90),
+            'amp_scale' : 1}
+   map_list.append((arg,kwarg))
+
+sp = p.map(prep_wrapper,map_list)
+
+for idx, sax in enumerate(sax_list):
+    t = np.linspace(-10,160,num=len(sp[idx]))
+    sax.axvline(10,color='r',lw=3)
+    sax.plot(t,sp[idx],color='k')
+    sax.set_xlim(-10,160)
+    sax.set_ylim(-1,1)
+    sax.grid()
+
+plt.show()
+'''
+#Synthetics
+for idx in range(len(freq_list)):
+    st_out.append(prep_stream(st_in,ax_list[idx],sax_list[idx],freq_lim=freq_list[idx],
+                coord_list=[559,43,5512,56],ist=idx,az_lim=(270,330),
+                range_lim=(55,90),amp_scale=5))
+plt.show()
+'''
+
+#Data
+#for idx in range(len(freq_list)):
+#    st_out.append(prep_stream(st_in,ax_list[idx],sax_list[idx],freq_lim=freq_list[idx],
+#                coord_list=[514,40,5440,51],ist=idx,az_lim=(270,330),
+#                range_lim=(55,90),amp_scale=5))
+plt.show()
+
+
+'''
+
+seispy.plot.section(st,title='Broadband',x_lim=(-50,200))
+seispy.plot.section(st2,title='0.05<f<0.3',x_lim=(-50,200))
+seispy.plot.section(st3,title='0.05<f<0.4',x_lim=(-50,200))
+seispy.plot.section(st4,title='0.05<f<0.5',x_lim=(-50,200))
+seispy.plot.section(st5,title='0.05<f<0.6',x_lim=(-50,200))
+seispy.plot.section(st6,title='0.05<f<0.7',x_lim=(-50,200))
+'''
+

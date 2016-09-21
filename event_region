@@ -1,0 +1,183 @@
+#!/usr/bin/env python
+
+import numpy as np
+import obspy
+from matplotlib import pyplot as plt
+import seispy
+import glob
+from mpl_toolkits.basemap import Basemap
+import h5py
+import matplotlib.patches as patches
+from seispy import mapplot
+from geopy.distance import VincentyDistance
+import geopy
+import sys
+import matplotlib.gridspec as gridspec
+
+'''
+Takes one command line argument: obspy stream object
+Plots events sampled and peirce points
+'''
+
+def get_ev_loc():
+    print("Getting event locations")
+    data_dir = glob.glob('*-*-*')
+    ev_loc_list = []
+
+    for ii in data_dir:
+        if '.tgz' in ii:
+            continue
+        else:
+            data_list = glob.glob(ii+'/*BHZ*filtered')
+            st = obspy.read(data_list[0])
+            lat = st[0].stats.sac['evla']
+            lon = st[0].stats.sac['evlo']
+            ev_loc_list.append([lat,lon])
+
+    print len(ev_loc_list)
+    return ev_loc_list
+
+def mapplot_events(**kwargs):
+   """
+   produce map on which to draw objects
+   """
+   font = {'size':10}
+   lat = kwargs.get('lat_0',45)
+   lon = kwargs.get('lon_0',-100)
+   map = Basemap(llcrnrlon=-90,llcrnrlat=-30,urcrnrlon=-60.,urcrnrlat=15.,
+                resolution='l', projection='tmerc',lat_0=0.,lon_0=-75.,
+                area_thresh=10000)
+   map.drawcoastlines()
+   map.drawmapboundary(fill_color='lightgray',zorder=0)
+   map.fillcontinents(color='white',lake_color='lightgray',zorder=1)
+   parallels = np.arange(-60.,21,20.)
+   meridians = np.arange(-100.,-61.,20.)
+   map.drawparallels(parallels,labels=[False,True,True,False],zorder=100,
+                     fontdict=font)
+   map.drawmeridians(meridians,labels=[True,False,False,True],zorder=100,
+                     fontdict=font)
+   #map.drawlsmask(land_color='white',ocean_color='white',lakes=False)
+   #map.drawcountries(linewidth=0.25)
+   return map
+
+def mapplot_sr(**kwargs):
+   """
+   produce map on which to draw objects
+   """
+   font = {'size':10}
+   lat = kwargs.get('lat_0',45)
+   lon = kwargs.get('lon_0',-100)
+   map = Basemap(llcrnrlon=-120,llcrnrlat=-15,urcrnrlon=-50.,urcrnrlat=55.,
+                resolution='l', projection='tmerc',lat_0=15.,lon_0=-90.,
+                area_thresh=10000)
+   map.drawmapboundary(fill_color='lightgray',zorder=0)
+   map.fillcontinents(color='white',lake_color='lightgray',zorder=1)
+   parallels = np.arange(-30.,61,20.)
+   meridians = np.arange(-110.,-50.,20.)
+   map.drawparallels(parallels,labels=[False,True,True,False],zorder=100,
+                     fontdict=font)
+   map.drawmeridians(meridians,labels=[True,False,False,True],zorder=100,
+                     fontdict=font)
+   #map = Basemap(height=16700000,width=12000000,
+   #         resolution='l',area_thresh=1000.,projection='omerc',
+   #         lon_0=-100,lat_0=15,lon_2=-110,lat_2=60,lon_1=-50,lat_1=-55)
+   map.drawcoastlines()
+   #map.drawlsmask(land_color='gray',ocean_color='white',lakes=False)
+   #map.drawcountries(linewidth=0.25)
+   return map
+
+def add_station(coord_list, map, **kwargs):
+   """
+   From coordinate list, add stations to map
+   """
+   #model = TauPyModel(model="prem_50")
+   mark = kwargs.get('marker','s')
+   color = kwargs.get('color','k')
+   size = kwargs.get('size',10)
+   lw = kwargs.get('lw',0.2)
+   for ii in coord_list:
+       x,y = map(ii[1],ii[0])
+       map.scatter(x,y,c=color,s=size,marker=mark,lw=lw,zorder=100)
+
+def get_important_location():
+    st = obspy.read('location.pk')
+    important_loc = []
+    for ii in st:
+        important_loc.append([ii.stats.sac['stla'],ii.stats.sac['stlo']])
+    event = [[st[0].stats.sac['evla'],st[0].stats.sac['evlo']]]
+    return event, important_loc
+
+def pierce_points(pierce_array,event,map,**kwargs):
+    c = kwargs.get('color','k')
+
+    for ii in pierce_array:
+        bearing = ii[1]
+        origin = geopy.Point(event[0][0],event[0][1])
+        destination = VincentyDistance(kilometers=111*np.degrees(ii[0])).destination(origin,bearing)
+        lat = destination[0]
+        lon = destination[1]
+        x,y = map(lon,lat)
+        map.scatter(x,y,8,marker='o',color=c,lw=0,zorder=100)
+
+st = obspy.read(sys.argv[1])
+
+font = {'size':15}
+pierce_1150 = np.loadtxt('1150.dat')
+pierce_1500 = np.loadtxt('1500.dat')
+pierce_1800 = np.loadtxt('1800.dat')
+
+ev_loc_list = get_ev_loc()
+important_loc = np.loadtxt('stations.dat')
+event_A = [[-8.085990,-71.207]]
+event_B = [[-8.11520,-71.6412]]
+
+
+fig = plt.figure(figsize=(10,7))
+gs = gridspec.GridSpec(100, 2)
+ax0 = plt.subplot(gs[0:95,0])
+ax0.set_title('Event study region',fontdict=font)
+#ax0.tick_params(axis='y', labelsize=5)
+#ax0.tick_params(axis='x', labelsize=5)
+ax1 = plt.subplot(gs[0:95,1])
+ax1.set_title('Receiver array and conversion points',fontdict=font)
+font = {'size':10}
+ax0.text(1.97377e6,2.62276e6,'Event A',size=10)
+ax0.text(1.36129e6,2.28502e6,'Event B',size=10)
+#ax1.tick_params(axis='y', labelsize=5)
+#ax1.tick_params(axis='x', labelsize=5)
+
+plt.sca(ax0)
+map = mapplot_events()
+add_station(ev_loc_list,map,marker='o')
+add_station(event_B,map,color='green',size=300,marker='*')
+add_station(event_A,map,color='purple',size=300,zorder=300,marker='*')
+#ax0.add_patch(patches.Rectangle((1.64054e6,2.700e6),3e6,1e6,facecolor='w',
+#                zorder=99,edgecolor='w'))
+
+
+plt.sca(ax1)
+map = mapplot_sr()
+
+pierce_points(pierce_1150,event_A,map,color='red')
+pierce_points(pierce_1500,event_A,map,color='blue')
+pierce_points(pierce_1800,event_A,map,color='green')
+map.scatter(0,0,color='red',label='1150 km')
+map.scatter(0,0,color='blue',label='1500 km')
+map.scatter(0,0,color='green',label='1800 km')
+
+font = {'size':10}
+legend = ax1.legend(loc=3,scatterpoints=3,prop={'size':10})
+legend.set_zorder(100)
+add_station(important_loc,map,marker='v',color='k',size=10,lw=0.1)
+add_station(event_A,map,color='purple',size=180,marker='*')
+
+fig.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+

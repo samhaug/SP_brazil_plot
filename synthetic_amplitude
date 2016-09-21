@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+
+import numpy as np
+import seispy
+import obspy
+import os
+from matplotlib import pyplot as plt
+import scipy
+
+def get_values(ffreq):
+
+    seis_list = os.listdir('.')
+
+    amp_array = []
+    for file in seis_list:
+        try:
+            st = obspy.read(file+'/pas.prem.z')
+        except IOError:
+            continue
+        st.integrate()
+        #st.filter('bandpass',freqmin=ffreq[0],freqmax=ffreq[1])
+        st.normalize()
+        st = seispy.dsm.sac_metadata(st)
+        st = seispy.data.align_on_phase(st,window_tuple=(-30,30))
+        st = seispy.data.normalize_on_phase(st)
+        tr = seispy.data.phase_window(st[0],['S1800P'],(-5,5))
+        trs = seispy.data.phase_window(st[0],['S'],(-15,25))
+        #plt.plot(tr.data)
+        #plt.plot(trs.data)
+        #plt.show()
+        width = float(file.split('_')[0])
+        discont_amp = float(file.split('_')[1])
+        s_amp =trs.data.max()
+        conv_amp = tr.data.max()
+        amp = conv_amp/s_amp
+        amp_array.append([width, discont_amp, amp])
+
+    return np.array(amp_array)
+
+def plot(aa,psi,delta):
+
+    fig, ax = plt.subplots()
+    #test = np.array((15,0.04,0.100))
+    #aa = np.vstack((aa,test))
+
+    #least_sq = (aa[:,2]-0.06)**2
+    #sc = ax.scatter(aa[:,0],aa[:,1]*100,c=least_sq,s=100,lw=0)
+
+        #ax.scatter(ii[1]*100,ii[2],color=c,alpha=a)
+        #ax.plot(ii[1],ii[2],color=c)
+    #fig.colorbar(sc,ax=ax)
+    aa = aa[aa[:,0].argsort()]
+    w = np.reshape(aa[:,0],(6,8),order='F')
+    disc = np.reshape(aa[:,1],(6,8),order='F')
+    amp = np.reshape(aa[:,2],(6,8),order='F')
+    for ii in range(0,disc.shape[1]):
+        new_i = disc[:,ii].argsort()
+        disc[:,ii] = disc[new_i,ii]
+        amp[:,ii] = amp[new_i,ii]
+    least_sq = ((amp-psi)/delta)**2
+    w_old = w[0,:]
+    disc_old = disc[:,0]
+    f = scipy.interpolate.interp2d(w_old,disc_old,least_sq,kind='cubic')
+    w_new = np.linspace(w_old[0],w_old[-1],num=200)
+    disc_new = np.linspace(disc_old[0],disc_old[-1],num=200)
+
+    m = f(w_new,disc_new)
+    ww,dd = np.meshgrid(w_new,disc_new*100)
+
+    CS = ax.contour(ww,dd,m,np.hstack((np.arange(0,1.2,0.2),(3,6,9))),
+                    colors=('k','k','k','k','k','k','r','r','r'),
+                    vmin=0,vmax=1.0)
+    ax.clabel(CS, fontsize=9, inline=1)
+    #im = plt.imshow(np.flipud(m),aspect='auto',interpolation='none',
+    #           cmap='viridis_r',vmin=m.min(),vmax=5,
+    #           extent=[1,50,0.1,4.0])
+    #fig.colorbar(im,ax=ax)
+    min_list = zip(*np.where(m == m.min()))
+
+
+    #ax.scatter(-10,-10,color='k',label='1km')
+    #ax.scatter(-10,-10,color='b',label='5km')
+    #ax.scatter(-10,-10,color='r',label='10km')
+    #ax.scatter(-10,-10,color='g',label='15km')
+    #ax.scatter(-10,-10,color='m',label='20km')
+    font = {'size':10}
+    ax.set_ylabel(r'$\%  \delta V_{S}$')
+    ax.set_xlabel('Discontinuity width (km)')
+    ax.set_title(r'$\Psi$  $L_{2}$ Misfit')
+    ax.tick_params(axis='y', labelsize=10)
+    ax.tick_params(axis='x', labelsize=10)
+    #print min_list
+    #ax.scatter(min_list[0],min_list[1])
+    #ax.set_xlim(0,5)
+    #ax.set_ylim(0,0.2)
+    #ax.axhline(0.06)
+    plt.show()
+    return w,disc,m
+
+#amp_array = get_values((0.5,10.0))
+#w,disc,amp1 = plot(amp_array,0.805,0.296)
+
+#amp_array = get_values((0.3,0.6))
+#w,disc,amp1 = plot(amp_array,1.220,0.424)
+
+#amp_array = get_values(0.2)
+#w,disc,amp1 = plot(amp_array,0.034,0.006)
+
+#amp_array = get_values(0.5)
+#w,disc,amp1 = plot(amp_array,0.057,0.008)
+
+#amp_array = get_values(0.7)
+#w,disc,amp1 = plot(amp_array,0.058,0.009)
+#
+#amp_array = get_values(1.0)
+#w,disc,amp1 = plot(amp_array,0.057,0.009)
+
+amp_array = get_values(10.0)
+w,disc,amp1 = plot(amp_array,0.057,0.009)
+#amp_array = get_values(4.0)
+#w,disc,amp2 = plot(amp_array,0.059,0.009)
+
+#amp_array = get_values(0.6)
+#w,disc,amp = plot(amp_array,0.)
+
+
+
+

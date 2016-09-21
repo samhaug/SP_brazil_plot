@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import numpy as np
+from matplotlib import pyplot as plt
+from scipy import interpolate
+import sys
+import pandas as pd
+
+def get_values(excel_file):
+    move_slab = pd.read_excel(excel_file,sheetname='move_slab')
+    move_slab = move_slab.values/1.98
+
+    return move_slab
+
+def plot(move_slab):
+    bar_3 = move_slab[:,0]
+    bar_4 = move_slab[:,1]
+    bar_5 = move_slab[:,2]
+    bar_6 = move_slab[:,3]
+
+    ind = np.array([3,4,5,6,7,8])  # the x locations for the groups
+    width = 0.20      # the width of the bars
+
+    fig, ax = plt.subplots()
+    rects3 = ax.bar(ind, bar_3, width, color='r',zorder=100)
+    rects4 = ax.bar(ind+width, bar_4, width, color='g',zorder=100)
+    rects5 = ax.bar(ind+2*width, bar_5, width, color='b',zorder=100)
+    rects6 = ax.bar(ind+3*width, bar_6, width, color='purple',zorder=100)
+
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('A')
+    ax.set_xticks(ind + 2*width)
+    ax.set_xticklabels((r'$3^{\circ}$', r'$4^{\circ}$', r'$5^{\circ}$',
+                        r'$6^{\circ}$', r'$7^{\circ}$', r'$8^{\circ}$'))
+    ax.set_xlabel(r'$\alpha$')
+    ax.tick_params(axis='y', labelsize=10)
+    ax.tick_params(axis='x', labelsize=10)
+
+    ax.legend((rects3[0], rects4[0], rects5[0], rects6[0]),
+              (r'$3^{\circ}$',
+               r'$4^{\circ}$',
+               r'$5^{\circ}$',
+               r'$6^{\circ}$'),title=r'$\beta$'
+               )
+    ax.axhline(0.24,color='k')
+    ax.yaxis.grid(zorder=0)
+
+
+    '''
+    def autolabel(rects):
+        # attach some text labels
+        for rect in rects:
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+    autolabel(rects1)
+    autolabel(rects2)
+    autolabel(rects3)
+    autolabel(rects4)
+    '''
+    plt.show()
+
+move_slab = get_values(sys.argv[1])
+ind,bar_3= plot(move_slab)
+

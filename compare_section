@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+
+import obspy
+import numpy as np
+import seispy
+from matplotlib import pyplot as plt
+import sys
+
+
+st1 = obspy.read(sys.argv[1])
+st1.filter('lowpass',freq=1.0)
+st1 = seispy.filter.range_filter(st1,(45,80))
+st1 = seispy.filter.az_filter(st1,(270,330))
+st1.differentiate()
+st1 = seispy.data.normalize_on_phase(st1,phase=['S'])
+st1 = seispy.data.align_on_phase(st1)
+tr1 = seispy.plot.stack_amp(st1)
+tr1 = np.loadtxt(sys.argv[2])
+std1 = np.loadtxt(sys.argv[3])
+
+st2 = obspy.read(sys.argv[4])
+st2 = seispy.filter.gimp_filter(st2)
+st2.filter('lowpass',freq=1.0)
+st2 = seispy.filter.range_filter(st2,(45,80))
+st2 = seispy.filter.az_filter(st2,(270,330))
+st2.differentiate()
+st2 = seispy.data.normalize_on_phase(st2,phase=['S'])
+st2 = seispy.data.align_on_phase(st2)
+tr2 = seispy.plot.stack_amp(st2)
+
+fig = plt.figure(figsize=(13,28))
+ax_sec1   = plt.subplot2grid((4,2), (0,0), rowspan=2)
+ax_vesp1 = plt.subplot2grid((4,2), (2,0))
+ax_wave1 = plt.subplot2grid((4,2), (3,0))
+ax_sec2   = plt.subplot2grid((4,2), (0,1), rowspan=2)
+ax_vesp2 = plt.subplot2grid((4,2), (2,1))
+ax_wave2 = plt.subplot2grid((4,2), (3,1))
+bbax1 = fig.add_axes((0.43,0.48,0.1,0.1))
+bbax1.axes.get_yaxis().set_visible(False)
+bbax1.axes.get_xaxis().set_visible(False)
+bbax1.set_frame_on(False)
+bbax1.patch.set_alpha(0)
+#bbax2 = fig.add_axes((0.85,0.48,0.1,0.1))
+#bbax2.axes.get_yaxis().set_visible(False)
+#bbax2.axes.get_xaxis().set_visible(False)
+#bbax2.set_frame_on(False)
+#bbax2.patch.set_alpha(0)
+
+phase_dict = {'family' : 'normal',
+              'size'   : 10}
+#ax_sec1, ax_sec2, ax_vesp1, ax_vesp2, cax, fig = make_figure()
+
+st1 = obspy.read(sys.argv[1])
+st2 = obspy.read(sys.argv[4])
+st2 = seispy.filter.gimp_filter(st2)
+st1.filter('lowpass',freq=1.0)
+#st2.filter('lowpass',freq=1.0)
+st1 = seispy.filter.range_filter(st1,(45,80))
+st2 = seispy.filter.range_filter(st2,(45,80))
+
+#st1.filter('highpass',freq=0.3)
+st1.normalize()
+st1 = seispy.data.align_on_phase(st1)
+
+#st2.filter('highpass',freq=0.3)
+st2.normalize()
+st2 = seispy.data.align_on_phase(st2)
+for tr in st2:
+    tr.data *= 2
+
+#######Section plots
+
+#Top Left
+seispy.plot.section(st1,az_color=331,x_lim=(-10,160),ax_grab=ax_sec1,
+                    title=False,y_lim=(43,75))
+
+ax_sec1.set_xlabel('')
+ax_sec1.xaxis.set_ticklabels([])
+ax_sec1.set_title('Event A')
+focmec1 = [14,21,-61]
+b = obspy.imaging.beachball.Beach(focmec1,xy=(0.5,0.5),width=0.5,linewidth=1,
+                                  facecolor='blue')
+bbax1.add_collection(b)
+
+ax_sec1.text(0,44,'P',fontdict=phase_dict)
+ax_sec1.text(90,44,'PcP',fontdict=phase_dict)
+ax_sec1.text(130,73.5,'pP',fontdict=phase_dict)
+ax_sec1.text(90,73.5,'1800',fontdict=phase_dict)
+ax_sec1.text(65,73.5,'1500',fontdict=phase_dict)
+ax_sec1.text(35,73.5,'1150',fontdict=phase_dict)
+ax_sec1.tick_params(axis='y', labelsize=10)
+
+#Top Right
+seispy.plot.section(st2[::2],x_lim=(-10,160),ax_grab=ax_sec2,
+                    title=False,y_lim=(43,75))
+ax_sec2.set_xlabel('')
+ax_sec2.set_ylabel('')
+ax_sec2.xaxis.set_ticklabels([])
+ax_sec2.yaxis.set_ticklabels([])
+ax_sec2.set_title('Event B')
+focmec2 = [349,37,-82]
+#b = obspy.imaging.beachball.Beach(focmec2,xy=(0.5,0.5),width=0.5,linewidth=1,
+#                                  facecolor='blue')
+#bbax2.add_collection(b)
+
+ax_sec2.text(0,44,'P',fontdict=phase_dict)
+ax_sec2.text(90,44,'PcP',fontdict=phase_dict)
+ax_sec2.text(125,73.5,'pP',fontdict=phase_dict)
+ax_sec2.text(20,44,'p410P',fontdict=phase_dict)
+ax_sec2.text(40,44,'s410P',fontdict=phase_dict)
+
+
+####Vespagram plots
+#bottom left
+st1 = seispy.filter.az_filter(st1,(270,330))
+st1.differentiate()
+st1 = seispy.data.normalize_on_phase(st1)
+st1 = seispy.data.align_on_phase(st1)
+image1 = seispy.plot.vespagram(st1,ax_grab=ax_vesp1,title=False,x_lim=(-10,160))
+ax_vesp1.grid()
+ax_vesp1.set_ylabel('Slowness')
+ax_vesp1.tick_params(axis='y', labelsize=10)
+ax_vesp1.tick_params(axis='x', labelsize=10)
+ax_vesp1.xaxis.set_ticklabels([])
+
+#bottom right
+st2 = seispy.filter.az_filter(st2,(270,330))
+st2.differentiate()
+st2 = seispy.data.normalize_on_phase(st2)
+st2 = seispy.data.align_on_phase(st2)
+image2 = seispy.plot.vespagram(st2,ax_grab=ax_vesp2,title=False,x_lim=(-10,160))
+ax_vesp2.yaxis.set_ticklabels([])
+ax_vesp2.xaxis.set_ticklabels([])
+ax_vesp2.grid()
+ax_vesp2.tick_params(axis='x', labelsize=10)
+
+####Colorbar
+bbox = ax_vesp2.get_position()
+xmax = bbox.xmax
+ymin = bbox.ymin
+ymax = bbox.ymax
+
+cax = fig.add_axes((xmax+0.02,ymax,0.02,ymin-ymax))
+cbar = fig.colorbar(image1,cax=cax,orientation='vertical')
+cbar.ax.invert_yaxis()
+cbar.set_ticks([0,-1,-2,-3])
+cbar.set_label(r'$\log(Amplitude)$')
+
+## Wave cross section 1
+t = np.linspace(-10,160,num=len(tr1))
+#ax_wave1.plot(t,tr1/tr1.max(),c='k')
+tr1[1000::] *= 5
+std1[1000::] *= 5
+ax_wave1.plot(t,tr1,c='k')
+ax_wave1.fill_between(t,tr1-std1,tr1+std1,color='r',alpha=0.5)
+ax_wave1.set_xlim(-10,160)
+ax_wave1.tick_params(axis='y', labelsize=10)
+ax_wave1.tick_params(axis='x', labelsize=10)
+ax_wave1.set_xlabel('Seconds after P')
+ax_wave1.yaxis.set_ticklabels([])
+ax_wave1.set_ylim((-1,1))
+ax_wave1.grid()
+
+
+## Wave cross section 2
+t = np.linspace(-10,160,num=len(tr2))
+tr2[1000::] *= 5
+ax_wave2.plot(t,tr2,c='k')
+ax_wave2.set_xlim(-10,160)
+ax_wave2.tick_params(axis='y', labelsize=10)
+ax_wave2.tick_params(axis='x', labelsize=10)
+ax_wave2.set_xlabel('Seconds after P')
+ax_wave2.yaxis.set_ticklabels([])
+ax_wave2.set_ylim((-1,1))
+ax_wave2.grid()
+plt.show()
+
+
+

@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+import obspy
+import numpy as np
+import seispy
+from matplotlib import pyplot as plt
+from matplotlib import gridspec as gridspec
+import sys
+
+'''
+just like compare_section but without vespagrams and sections
+along rows
+'''
+
+fig = plt.figure(figsize=(20,20))
+gs = gridspec.GridSpec(100,20)
+
+ax_sec1 = plt.subplot(gs[0:50,:])
+ax_sec2 = plt.subplot(gs[51::,:])
+
+bbax1 = fig.add_axes((0.85,0.45,0.1,0.1))
+bbax1.axes.get_yaxis().set_visible(False)
+bbax1.axes.get_xaxis().set_visible(False)
+bbax1.set_frame_on(False)
+bbax1.patch.set_alpha(0)
+bbax2 = fig.add_axes((0.85,0.05,0.1,0.1))
+bbax2.axes.get_yaxis().set_visible(False)
+bbax2.axes.get_xaxis().set_visible(False)
+bbax2.set_frame_on(False)
+bbax2.patch.set_alpha(0)
+
+
+phase_dict = {'family' : 'normal',
+              'size'   : 10}
+#ax_sec1, ax_sec2, ax_vesp1, ax_vesp2, cax, fig = make_figure()
+
+st1 = obspy.read(sys.argv[1])
+st2 = obspy.read(sys.argv[2])
+st1 = seispy.filter.range_filter(st1,(45,80))
+st2 = seispy.filter.range_filter(st2,(45,80))
+
+#st1.filter('highpass',freq=0.3)
+st1.normalize()
+st1 = seispy.data.align_on_phase(st1)
+
+#st2.filter('highpass',freq=0.3)
+st2.normalize()
+st2 = seispy.data.align_on_phase(st2)
+#######3Section plots
+
+#Top Left
+seispy.plot.section(st1,az_color=331,x_lim=(-10,550),ax_grab=ax_sec1,
+                    title=False,y_lim=(43,75))
+
+ax_sec1.set_xlabel('')
+ax_sec1.xaxis.set_ticklabels([])
+focmec1 = [14,21,-61]
+b = obspy.imaging.beachball.Beach(focmec1,xy=(0.5,0.5),width=0.5,linewidth=1,
+                                  facecolor='blue')
+bbax1.add_collection(b)
+
+ax_sec1.text(0,44,'P',fontdict=phase_dict)
+ax_sec1.text(90,44,'PcP',fontdict=phase_dict)
+ax_sec1.text(130,73.5,'pP',fontdict=phase_dict)
+ax_sec1.text(90,73.5,'1800',fontdict=phase_dict)
+ax_sec1.text(65,73.5,'1500',fontdict=phase_dict)
+ax_sec1.text(35,73.5,'1150',fontdict=phase_dict)
+ax_sec1.tick_params(axis='y', labelsize=10)
+
+#Top Right
+seispy.plot.section(st2[::2],x_lim=(-10,550),ax_grab=ax_sec2,
+                    title=False,y_lim=(43,75))
+ax_sec2.set_xlabel('Seconds after P')
+ax_sec2.tick_params(axis='x', labelsize=10)
+ax_sec2.tick_params(axis='y', labelsize=10)
+focmec2 = [349,37,-82]
+b = obspy.imaging.beachball.Beach(focmec2,xy=(0.5,0.5),width=0.5,linewidth=1,
+                                  facecolor='blue')
+bbax2.add_collection(b)
+
+ax_sec2.text(0,44,'P',fontdict=phase_dict)
+ax_sec2.text(90,44,'PcP',fontdict=phase_dict)
+ax_sec2.text(125,73.5,'pP',fontdict=phase_dict)
+ax_sec2.text(20,44,'p410P',fontdict=phase_dict)
+ax_sec2.text(40,44,'s410P',fontdict=phase_dict)
+
+
+plt.show()
+
+
+
+
+
