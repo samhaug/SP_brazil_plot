@@ -4,6 +4,7 @@ import obspy
 import seispy
 from numpy import abs
 from sys import argv
+from matplotlib import pyplot as plt
 
 st = obspy.read('st_Z.pk')
 st = seispy.convert.set_gcarc(st)
@@ -28,5 +29,7 @@ if argv[1] == 'plot':
 
 if argv[1] == 'section':
     SP = seispy.plot.stack_amp(st,p_tick=-0.02)
+    plt.plot(SP)
+    plt.show()
 
 print 'Ratio', str(SP.max()-SP.min())
