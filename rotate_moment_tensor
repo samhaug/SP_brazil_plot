@@ -129,11 +129,13 @@ def main():
     mrt = cmt[9,1]
     mrp = cmt[10,1]
     mtp = cmt[11,1]
+
     '''
     M=[Mtt Mtp Mtr
-    Mtp Mpp Mpr
-    Mtr Mpr Mrr]
+       Mtp Mpp Mpr
+       Mtr Mpr Mrr]
     '''
+
     M = np.matrix([[mtt,mtp,mrt],[mtp,mpp,mrp],[mrt,mrp,mrr]])
 
     north_pole = [6371,0,0]
@@ -142,6 +144,8 @@ def main():
     source_coord = [6371,colat,lon]
     north_pole = [6371,0,0]
     phi = find_rotation_angle(source_coord,north_pole)
+    #phi = find_rotation_angle(north_pole,source_coord)
+    print n, phi
     rot_m,s_colat_new,s_lon_new = rotate_moment_tensor(n,phi,colat,lon,M)
     print rot_m
 
@@ -267,9 +271,7 @@ def rotate_moment_tensor(n,phi,colat,lon,M):
 
   # assemble transformation matrix and return
 
-  A=np.matrix([[float(bt_new.transpose()*bt), float(bt_new.transpose()*bp), float(bt_new.transpose()*br)],
-               [float(bp_new.transpose()*bt), float(bp_new.transpose()*bp), float(bp_new.transpose()*br)],
-               [float(br_new.transpose()*bt), float(br_new.transpose()*bp), float(br_new.transpose()*br)]])
+  A=np.matrix([[float(bt_new.transpose()*bt), float(bt_new.transpose()*bp), float(bt_new.transpose()*br)],[float(bp_new.transpose()*bt), float(bp_new.transpose()*bp), float(bp_new.transpose()*br)],[float(br_new.transpose()*bt), float(br_new.transpose()*bp), float(br_new.transpose()*br)]])
 
   return A*M*A.transpose(),colat_new,lon_new
 
