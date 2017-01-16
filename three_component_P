@@ -7,9 +7,9 @@ import matplotlib.gridspec as gridspec
 from obspy.taup import TauPyModel
 model = TauPyModel(model="iasp91")
 
-stz = obspy.read('BHZ.pk')
-stn = obspy.read('BHN.pk')
-ste = obspy.read('BHE.pk')
+stz = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHZ.pk')
+stn = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHN.pk')
+ste = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHE.pk')
 
 def prep_stream(st):
     for tr in st:
