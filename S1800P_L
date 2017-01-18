@@ -1,0 +1,131 @@
+#!/home/samhaug/anaconda2/bin/python
+import numpy as np
+import seispy
+import obspy
+from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
+from obspy.taup import TauPyModel
+model = TauPyModel(model="prem50")
+
+stz = obspy.read('/home/samhaug/work1/SP_brazil_data/BHZ.pk')
+stn = obspy.read('/home/samhaug/work1/SP_brazil_data/BHN.pk')
+ste = obspy.read('/home/samhaug/work1/SP_brazil_data/BHE.pk')
+stz = seispy.filter.gimp_filter(stz)
+stz.filter('highpass',freq=1/50.)
+ste = seispy.filter.gimp_filter(ste)
+ste.filter('highpass',freq=1/50.)
+stn = seispy.filter.gimp_filter(stn)
+stn.filter('highpass',freq=1/50.)
+for tr in stz:
+    tr.stats.az = tr.stats.sac['az']
+for tr in stn:
+    tr.stats.az = tr.stats.sac['az']
+for tr in ste:
+    tr.stats.az = tr.stats.sac['az']
+
+l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1800P'])
+fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
+
+l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
+q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
+t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
+
+for tr in l:
+    tr.stats.az = tr.stats.sac['az']
+for tr in q:
+    tr.stats.az = tr.stats.sac['az']
+for tr in t:
+    tr.stats.az = tr.stats.sac['az']
+
+l.sort(['az'])
+q.sort(['az'])
+t.sort(['az'])
+
+gs = gridspec.GridSpec(45,115)
+fig = plt.figure(figsize=(8,5))
+fig.patch.set_visible(False)
+
+axl = plt.subplot(gs[0:45,0:35])
+axsh = plt.subplot(gs[0:45,40:75])
+axsv = plt.subplot(gs[0:45,80:115])
+axl.set_ylim(-2,18)
+axsh.set_ylim(-2,18)
+axsv.set_ylim(-2,18)
+axl.set_title('S1800P (L comp)')
+axsh.set_title('SH')
+axsv.set_title('SV')
+
+for b in [axl,axsh,axsv]:
+    b.spines['top'].set_visible(False)
+    b.spines['right'].set_visible(False)
+    b.spines['left'].set_visible(False)
+    b.yaxis.set_ticklabels([])
+    b.yaxis.set_ticks([])
+    b.tick_params(axis='both', which='major', labelsize=7)
+    b.xaxis.set_ticks_position('bottom')
+
+lmax = []
+for idx,tr in enumerate(l):
+    name = tr.stats.station
+    #This is the same as windowing on S1775P
+    a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
+    tl = np.linspace(-10,10,num=len(a.data))
+    z = np.polyfit(tl,a.data,2)
+    p = np.poly1d(z)
+    a.data += -1*p(tl)
+    print np.mean(a.data)
+    a.data += -1*np.mean(a.data)
+    a_max = np.abs(a.data).max()
+    a.normalize()
+    a.data *= 0.7
+    gcarc = tr.stats.sac['gcarc']
+    az = tr.stats.sac['az']
+    h = tr.stats.sac['evdp']
+
+
+    lmax.append(a_max)
+    axl.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+    axl.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+    axl.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
+    axl.text(-14,2*idx+0.44,name,size=6)
+    axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+
+for idx,tr in enumerate(q):
+    name = tr.stats.station
+    a = seispy.data.phase_window(tr,['S'],window=(-30,30))
+    a_max = np.abs(a.data).max()
+    a.normalize()
+    a.data *= 0.9
+    gcarc = tr.stats.sac['gcarc']
+    az = tr.stats.sac['az']
+    h = tr.stats.sac['evdp']
+    tl = np.linspace(-30,30,num=len(a.data))
+    axsv.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+    #axsv.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+    #axsv.text(-14,2*idx+0.44,name,size=6)
+    axsv.set_xlim(-30,30)
+    axsv.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+    axsv.text(10,2*idx+0.44,str(np.round(int(a_max)/lmax[idx],1)),size=6)
+
+for idx,tr in enumerate(t):
+    name = tr.stats.station
+    a = seispy.data.phase_window(tr,['S'],window=(-30,30))
+    a_max = np.abs(a.data).max()
+    a.normalize()
+    a.data *= 0.9
+    gcarc = tr.stats.sac['gcarc']
+    az = tr.stats.sac['az']
+    h = tr.stats.sac['evdp']
+    tl = np.linspace(-30,30,num=len(a.data))
+    axsh.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+    #axsh.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+    #axsh.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=6)
+    #axsh.text(-14,2*idx+0.44,name,size=6)
+    axsh.set_xlim(-30,30)
+    axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+    axsh.text(10,2*idx+0.44,str(np.round(int(a_max)/lmax[idx],1)),size=6)
+
+plt.show()
+
+
+

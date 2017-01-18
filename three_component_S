@@ -13,7 +13,7 @@ ste = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHE.pk')
 
 def prep_stream(st):
     for tr in st:
-        tr.stats.location = tr.stats.sac['gcarc']
+        tr.stats.location = tr.stats.sac['az']
     st.sort(['location'])
     st = seispy.filter.interp_filter(st,interp=40)
     st = seispy.filter.gimp_filter(st)
@@ -57,7 +57,7 @@ for idx,st in enumerate([stz,stn,ste]):
         gcarc = str(np.round(tr.stats.sac['gcarc'],1))
         az = str(np.round(tr.stats.sac['az'],1))
         name = tr.stats.station
-        s = seispy.data.phase_window(tr,['S'],(-50,50)).data
+        s = seispy.data.phase_window(tr,['S'],window=(-50,50)).data
         s = s/np.abs(s).max()
         ts = np.linspace(-50,50,num=len(s))
         ax_list[idx].plot(ts,2*idy+s,color='k',lw=0.5)
@@ -67,6 +67,14 @@ for idx,st in enumerate([stz,stn,ste]):
 
 for idx in range(0,len(stz)):
     baz = np.radians(stz[idx].stats.sac['baz'])
+    print baz
+    baz = obspy.geodetics.base.gps2dist_azimuth(
+        stz[idx].stats.sac['evla'],
+        stz[idx].stats.sac['evlo'],
+        stz[idx].stats.sac['stla'],
+        stz[idx].stats.sac['stlo'])[-1]
+    baz = np.radians(baz)
+    print baz
     gcarc = stz[idx].stats.sac['gcarc']
     az = st[idx].stats.sac['az']
     h = stz[idx].stats.sac['evdp']
@@ -75,38 +83,47 @@ for idx in range(0,len(stz)):
                                       phase_list=['S'])
     name = stz[idx].stats.station
 
-    zdat = seispy.data.phase_window(stz[idx],['S'],(-50,50)).data
-    ndat = seispy.data.phase_window(stn[idx],['S'],(-50,50)).data
-    edat = seispy.data.phase_window(ste[idx],['S'],(-50,50)).data
+    zdat = seispy.data.phase_window(stz[idx],['S'],window=(-50,50)).data
+    ndat = seispy.data.phase_window(stn[idx],['S'],window=(-50,50)).data
+    edat = seispy.data.phase_window(ste[idx],['S'],window=(-50,50)).data
 
     i = np.radians(arrivals[0].incident_angle)
 
     R = np.matrix([[np.cos(i),-1*np.sin(i)*np.sin(baz),-1*np.sin(i)*np.cos(baz)],
                    [np.sin(i),np.cos(i)*np.sin(baz),np.cos(i)*np.cos(baz)],
-                   [0,-1*np.cos(baz),np.sin(baz)],
+                   [0,-1*np.cos(baz),np.sin(baz)]
                   ])
 
     zen = [zdat,edat,ndat]
 
     lqt = (R*zen)
     ldat,qdat,tdat = np.array(lqt[0])[0,:],np.array(lqt[1])[0,:],np.array(lqt[2])[0,:]
+    lmax = ldat.max()
+    qmax = qdat.max()
+    tmax = tdat.max()
+
     ldat = ldat/np.abs(ldat).max()
     qdat = qdat/np.abs(qdat).max()
     tdat = tdat/np.abs(tdat).max()
 
     ts = np.linspace(-50,50,num=len(ldat))
+
     axl.plot(ts,2*idx+ldat,color='k',lw=0.5)
-    axq.plot(ts,2*idx+qdat,color='k',lw=0.5)
-    axt.plot(ts,2*idx+tdat,color='k',lw=0.5)
     axl.text(-20,2*idx+0.35,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=5)
     axl.text(20,2*idx+0.35,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=5)
     axl.text(-48,2*idx+0.35,name,size=5)
+
+    axq.plot(ts,2*idx+qdat,color='k',lw=0.5)
     axq.text(-20,2*idx+0.35,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=5)
     axq.text(20,2*idx+0.35,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=5)
-    axq.text(-48,2*idx+0.35,name,size=5)
+    #axq.text(-48,2*idx+0.35,name,size=5)
+    axq.text(-48,2*idx+0.35,str(np.round(qmax)),size=5)
+
+    axt.plot(ts,2*idx+tdat,color='k',lw=0.5)
     axt.text(-20,2*idx+0.35,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=5)
     axt.text(20,2*idx+0.35,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=5)
-    axt.text(-48,2*idx+0.35,name,size=5)
+    #axt.text(-48,2*idx+0.35,name,size=5)
+    axt.text(-48,2*idx+0.35,str(np.round(tmax)),size=5)
 
 plt.show()
 

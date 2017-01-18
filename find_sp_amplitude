@@ -1,0 +1,27 @@
+#!/home/samhaug/anaconda2/bin/python
+
+import obspy
+import numpy as np
+from sys import argv
+import seispy
+
+st_dir = argv[1]
+
+z = obspy.read(st_dir+'/st_Z.pk')
+e = obspy.read(st_dir+'/st_E.pk')
+n = obspy.read(st_dir+'/st_N.pk')
+
+l,n,b = seispy.data.rotate_phase(z,n,e,['S1800P'])
+f,q,t = seispy.data.rotate_phase(z,n,e,['S'])
+
+l.integrate()
+q.integrate()
+t.integrate()
+lq = l.copy()
+
+for idx,tr in enumerate(l):
+    lq[idx].data *= 1./np.abs(q[idx].data).max()
+
+
+
+

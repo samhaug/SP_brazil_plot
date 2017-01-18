@@ -5,11 +5,11 @@ import obspy
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from obspy.taup import TauPyModel
-model = TauPyModel(model="prem_50")
+model = TauPyModel(model="prem50")
 
-stz = obspy.read('BHZ.pk')
-stn = obspy.read('BHN.pk')
-ste = obspy.read('BHE.pk')
+stz = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHZ.pk')
+stn = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHN.pk')
+ste = obspy.read('/home/samhaug/work1/SP_brazil_setup/BHE.pk')
 
 def prep_stream(st):
     for tr in st:
@@ -77,7 +77,7 @@ for idx in range(0,len(stz)):
     h = stz[idx].stats.sac['evdp']
     arrivals = model.get_travel_times(source_depth_in_km=h,
                                       distance_in_degree=gcarc,
-                                      phase_list=['S'])
+                                      phase_list=['S1700P'])
     name = stz[idx].stats.station
 
     #zdat = seispy.data.phase_window(stz[idx],['S1800P'],(-10,10)).data
@@ -117,6 +117,9 @@ for idx in range(0,len(stz)):
     axt.text(-48,2*idx+0.35,name,size=5)
 
 plt.show()
+
+
+
 
 
 
