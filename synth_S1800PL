@@ -7,15 +7,14 @@ import matplotlib.gridspec as gridspec
 from obspy.taup import TauPyModel
 model = TauPyModel(model="prem50")
 
-stz = obspy.read('/home/samhaug/work1/SP_brazil_data/BHZ.pk')
-stn = obspy.read('/home/samhaug/work1/SP_brazil_data/BHN.pk')
-ste = obspy.read('/home/samhaug/work1/SP_brazil_data/BHE.pk')
-stz = seispy.filter.gimp_filter(stz)
-stz.filter('highpass',freq=1/50.)
-ste = seispy.filter.gimp_filter(ste)
-ste.filter('highpass',freq=1/50.)
-stn = seispy.filter.gimp_filter(stn)
-stn.filter('highpass',freq=1/50.)
+stz = obspy.read('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-2_0_5km/st_Z.pk')
+ste = obspy.read('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-2_0_5km/st_E.pk')
+stn = obspy.read('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-2_0_5km/st_N.pk')
+
+stz.integrate()
+ste.integrate()
+stn.integrate()
+
 for tr in stz:
     tr.stats.az = tr.stats.sac['az']
 for tr in stn:
@@ -23,12 +22,13 @@ for tr in stn:
 for tr in ste:
     tr.stats.az = tr.stats.sac['az']
 
-l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1800P'])
+
+l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
 fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
 
 l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
-q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
-t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
+#q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
+#t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
 
 for tr in l:
     tr.stats.az = tr.stats.sac['az']
@@ -68,7 +68,8 @@ lmax = []
 for idx,tr in enumerate(l):
     name = tr.stats.station
     #This is the same as windowing on S1775P
-    a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
+    a = seispy.data.phase_window(tr,['S1850P'],window=(-15,5))
+    #seispy.plot.plot(tr,phase_list=['P','S1850P'])
     tl = np.linspace(-10,10,num=len(a.data))
     z = np.polyfit(tl,a.data,2)
     p = np.poly1d(z)
@@ -90,6 +91,7 @@ for idx,tr in enumerate(l):
     axl.text(-14,2*idx+0.44,name,size=6)
     axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
 
+'''
 for idx,tr in enumerate(q):
     name = tr.stats.station
     a = seispy.data.phase_window(tr,['S'],window=(-30,30))
@@ -125,6 +127,7 @@ for idx,tr in enumerate(t):
     axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
     axsh.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
 
+'''
 plt.show()
 
 
