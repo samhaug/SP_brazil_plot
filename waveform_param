@@ -11,7 +11,7 @@ model = TauPyModel(model="prem50")
 Plot a figure exploring the difference of slab parameters on waveform.
 '''
 
-fig,ax = plt.subplots(3,1,figsize=(3,6))
+fig,ax = plt.subplots(3,1,figsize=(3,4.5))
 fig.patch.set_visible(False)
 
 for b in ax:
@@ -22,11 +22,13 @@ for b in ax:
     b.yaxis.set_ticks([])
     b.tick_params(axis='both', which='major', labelsize=7)
     b.xaxis.set_ticks_position('bottom')
-    b.set_ylim((-0.05,0.05))
+    b.set_ylim((-0.04,0.04))
 ax[0].spines['bottom'].set_visible(False)
 ax[0].xaxis.set_ticks([])
 ax[1].spines['bottom'].set_visible(False)
 ax[1].xaxis.set_ticks([])
+ax[2].xaxis.set_ticks([])
+ax[2].set_xlabel('20 s',size=10)
 
 def plot_waveform(ax,tr,color,ls,label):
 
@@ -39,7 +41,8 @@ def plot_waveform(ax,tr,color,ls,label):
     t = arrivals[0].time
     a = tr.slice(ts+t-9,ts+t+14)
     tw = np.linspace(-10,10,a.stats.npts)
-    ax.plot(tw,a.data,color=color,ls=ls,label=label)
+    ax.plot(tw,a.data,color=color,ls=ls,label=label,lw=0.5)
+
 
 def setup_trace(path_2_st):
     st = obspy.read(path_2_st)
@@ -63,12 +66,13 @@ plot_waveform(ax[1],tr,'k','--',r'$\delta v_{S} = -5\%$')
 l1 = ax[1].legend(loc='upper left',prop={'size':6})
 
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_1_10km/st_Z.pk')
-plot_waveform(ax[2],tr,'k','-',r'$\delta \rho$ = 1\%')
+plot_waveform(ax[2],tr,'k','-',r'$\delta \rho = 1\%$')
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_7_10km/st_Z.pk')
-plot_waveform(ax[2],tr,'k',':',r'$\delta \rho$ = 7\%')
+plot_waveform(ax[2],tr,'k',':',r'$\delta \rho = 7\%$')
 l2 = ax[2].legend(loc='upper left',prop={'size':6})
 
 
+plt.tight_layout()
 plt.show()
 
 
