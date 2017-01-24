@@ -1,0 +1,82 @@
+#!/home/samhaug/anaconda2/bin/python
+
+import numpy as np
+import obspy
+import seispy
+from matplotlib import pyplot as plt
+from obspy.taup import TauPyModel
+model = TauPyModel(model="prem50")
+
+'''
+Plot a figure exploring the difference of slab parameters on waveform.
+'''
+
+fig,ax = plt.subplots(3,1,figsize=(3,6))
+fig.patch.set_visible(False)
+
+for b in ax:
+    b.spines['top'].set_visible(False)
+    b.spines['right'].set_visible(False)
+    b.spines['left'].set_visible(False)
+    b.yaxis.set_ticklabels([])
+    b.yaxis.set_ticks([])
+    b.tick_params(axis='both', which='major', labelsize=7)
+    b.xaxis.set_ticks_position('bottom')
+    b.set_ylim((-0.05,0.05))
+ax[0].spines['bottom'].set_visible(False)
+ax[0].xaxis.set_ticks([])
+ax[1].spines['bottom'].set_visible(False)
+ax[1].xaxis.set_ticks([])
+
+def plot_waveform(ax,tr,color,ls,label):
+
+    gcarc = tr.stats.sac['gcarc']
+    h = tr.stats.sac['evdp']
+    ts = tr.stats.starttime
+    arrivals = model.get_travel_times(source_depth_in_km=h,
+                                      distance_in_degree=gcarc,
+                                      phase_list=['S1800P'])
+    t = arrivals[0].time
+    a = tr.slice(ts+t-9,ts+t+14)
+    tw = np.linspace(-10,10,a.stats.npts)
+    ax.plot(tw,a.data,color=color,ls=ls,label=label)
+
+def setup_trace(path_2_st):
+    st = obspy.read(path_2_st)
+    st.integrate().normalize()
+    return st[5]
+
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_5km_na/st_Z.pk')
+plot_waveform(ax[0],tr,'k',':',r'$5km$')
+#tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na/st_Z.pk')
+#plot_waveform(ax[0],tr,'b')
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_20km_na/st_Z.pk')
+plot_waveform(ax[0],tr,'k','-',r'$20km$')
+l0 = ax[0].legend(loc='upper left',prop={'size':6})
+
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-1_0_10km_na/st_Z.pk')
+plot_waveform(ax[1],tr,'k','-',r'$\delta v_{S} = -1\%$')
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na/st_Z.pk')
+plot_waveform(ax[1],tr,'k',':',r'$\delta v_{S} = -3\%$')
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na/st_Z.pk')
+plot_waveform(ax[1],tr,'k','--',r'$\delta v_{S} = -5\%$')
+l1 = ax[1].legend(loc='upper left',prop={'size':6})
+
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_1_10km/st_Z.pk')
+plot_waveform(ax[2],tr,'k','-',r'$\delta \rho$ = 1\%')
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_7_10km/st_Z.pk')
+plot_waveform(ax[2],tr,'k',':',r'$\delta \rho$ = 7\%')
+l2 = ax[2].legend(loc='upper left',prop={'size':6})
+
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
