@@ -63,6 +63,8 @@ tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na/st_
 plot_waveform(ax[1],tr,'k',':',r'$\delta v_{S} = -3\%$')
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na/st_Z.pk')
 plot_waveform(ax[1],tr,'k','--',r'$\delta v_{S} = -5\%$')
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-7_0_10km_na/st_Z.pk')
+plot_waveform(ax[1],tr,'b','-',r'$\delta v_{S} = -7\%$')
 l1 = ax[1].legend(loc='upper left',prop={'size':6})
 
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_1_10km/st_Z.pk')
