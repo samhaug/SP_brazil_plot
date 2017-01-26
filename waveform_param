@@ -55,7 +55,9 @@ plot_waveform(ax[0],tr,'k',':',r'$5km$')
 #plot_waveform(ax[0],tr,'b')
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_20km_na/st_Z.pk')
 plot_waveform(ax[0],tr,'k','-',r'$20km$')
-l0 = ax[0].legend(loc='upper left',prop={'size':6})
+tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_2km_na/st_Z.pk')
+plot_waveform(ax[0],tr,'b','-',r'$2km$')
+l0 = ax[0].legend(loc='upper left',prop={'size':6},frameon=False)
 
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-1_0_10km_na/st_Z.pk')
 plot_waveform(ax[1],tr,'k','-',r'$\delta v_{S} = -1\%$')
@@ -65,13 +67,13 @@ tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na/st_
 plot_waveform(ax[1],tr,'k','--',r'$\delta v_{S} = -5\%$')
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-7_0_10km_na/st_Z.pk')
 plot_waveform(ax[1],tr,'b','-',r'$\delta v_{S} = -7\%$')
-l1 = ax[1].legend(loc='upper left',prop={'size':6})
+l1 = ax[1].legend(loc='upper left',prop={'size':6},frameon=False)
 
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_1_10km/st_Z.pk')
 plot_waveform(ax[2],tr,'k','-',r'$\delta \rho = 1\%$')
 tr = setup_trace('/home/samhaug/work1/SP_brazil_sims/memex/0_-3_7_10km/st_Z.pk')
 plot_waveform(ax[2],tr,'k',':',r'$\delta \rho = 7\%$')
-l2 = ax[2].legend(loc='upper left',prop={'size':6})
+l2 = ax[2].legend(loc='upper left',prop={'size':6},frameon=False)
 
 
 plt.tight_layout()
