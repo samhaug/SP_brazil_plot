@@ -76,6 +76,8 @@ ax.yaxis.set_ticks([])
 ax.tick_params(axis='both', which='major', labelsize=7)
 ax.xaxis.set_ticks_position('bottom')
 ax.set_xlim((-10,10))
+ax.set_ylim((-1,14))
+ax.set_xlabel('Time (s)')
 
 skip_list = ['V19A','R12A']
 
@@ -131,11 +133,11 @@ for idx,tr in enumerate(l):
     gcarc = tr.stats.sac['gcarc']
     az = tr.stats.sac['az']
     h = tr.stats.sac['evdp']
-    ax.plot(dtl,2.0*idx+d.data,color='k',lw=0.5,alpha=0.8)
-    ax.plot(tl,2.0*idx+a.data,color='r',lw=0.5,alpha=0.8)
+    ax.plot(dtl,0.4+2.0*idx+d.data,color='k',lw=0.5,alpha=0.8)
+    ax.plot(tl,0.4+2.0*idx+a.data,color='r',lw=0.5,alpha=0.8)
     #ax.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
     #ax.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
-    ax.text(-6,2*idx+0.44,name,size=6)
+    ax.text(-6,0.4+2*idx+0.44,name,size=6)
     #ax.text(0.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
 
 plt.show()
