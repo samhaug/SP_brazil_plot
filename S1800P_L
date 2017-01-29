@@ -5,17 +5,24 @@ import obspy
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from obspy.taup import TauPyModel
+from subprocess import call
 model = TauPyModel(model="prem50")
 
+'''
+Plot data of L component S1800P conversion alongside SV and SH
+data.
+'''
 stz = obspy.read('/home/samhaug/work1/SP_brazil_data/BHZ.pk')
 stn = obspy.read('/home/samhaug/work1/SP_brazil_data/BHN.pk')
 ste = obspy.read('/home/samhaug/work1/SP_brazil_data/BHE.pk')
+
 stz = seispy.filter.gimp_filter(stz)
 stz.filter('highpass',freq=1/50.)
 ste = seispy.filter.gimp_filter(ste)
 ste.filter('highpass',freq=1/50.)
 stn = seispy.filter.gimp_filter(stn)
 stn.filter('highpass',freq=1/50.)
+
 for tr in stz:
     tr.stats.az = tr.stats.sac['az']
 for tr in stn:
@@ -23,7 +30,7 @@ for tr in stn:
 for tr in ste:
     tr.stats.az = tr.stats.sac['az']
 
-l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1800P'])
+l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
 fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
 
 l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
@@ -64,16 +71,29 @@ for b in [axl,axsh,axsv]:
     b.tick_params(axis='both', which='major', labelsize=7)
     b.xaxis.set_ticks_position('bottom')
 
+skip_list = ['OR074','V19A']
+
+for idx, tr in enumerate(l):
+    name = tr.stats.station
+    if name in skip_list:
+        l.remove(tr)
+        q.remove(q[idx])
+        t.remove(t[idx])
+
+l.sort(['az'])
+
+
 lmax = []
 for idx,tr in enumerate(l):
     name = tr.stats.station
+    #print name
     #This is the same as windowing on S1775P
     a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
     tl = np.linspace(-10,10,num=len(a.data))
     z = np.polyfit(tl,a.data,2)
     p = np.poly1d(z)
     a.data += -1*p(tl)
-    print np.mean(a.data)
+    #print np.mean(a.data)
     a.data += -1*np.mean(a.data)
     a_max = np.abs(a.data).max()
     a.normalize()
@@ -81,7 +101,6 @@ for idx,tr in enumerate(l):
     gcarc = tr.stats.sac['gcarc']
     az = tr.stats.sac['az']
     h = tr.stats.sac['evdp']
-
 
     lmax.append(a_max)
     axl.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
@@ -125,7 +144,9 @@ for idx,tr in enumerate(t):
     axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
     axsh.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
 
-plt.show()
+plt.savefig('S1800P_L.pdf')
+call('evince S1800P_L.pdf',shell=True)
+
 
 
 

@@ -31,6 +31,7 @@ dstn.filter('highpass',freq=1./50)
 
 dl,dfq,dft = seispy.data.rotate_phase(dstz,dstn,dste,['S1850P'])
 dfuck,dq,dt = seispy.data.rotate_phase(dstz,dstn,dste,['S'])
+
 dl = seispy.data.align_on_phase(dl,phase =['P'],window_tuple=(-20,20))
 dq = seispy.data.align_on_phase(dq,phase =['S'],window_tuple=(-20,20),min=False)
 dt = seispy.data.align_on_phase(dt,phase =['S'],window_tuple=(-20,20))
@@ -39,11 +40,11 @@ stz.integrate()
 ste.integrate()
 stn.integrate()
 
-for tr in stz:
+for tr in dstz:
     tr.stats.az = tr.stats.sac['az']
-for tr in stn:
+for tr in dstn:
     tr.stats.az = tr.stats.sac['az']
-for tr in ste:
+for tr in dste:
     tr.stats.az = tr.stats.sac['az']
 
 l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
@@ -65,6 +66,7 @@ dl.sort(['az'])
 q.sort(['az'])
 t.sort(['az'])
 
+
 fig,ax = plt.subplots(figsize=(3,5))
 fig.patch.set_visible(False)
 
@@ -80,19 +82,26 @@ ax.set_xlim((-10,10))
 ax.set_ylim((-1,14))
 ax.set_xlabel('Time after conversion (s)',size=10)
 
-skip_list = ['V19A','R12A']
+skip_list = ['OR074','V19A']
 
-for idx, tr in enumerate(l):
+for tr in l:
     name = tr.stats.station
     if name in skip_list:
         l.remove(tr)
-        dl.remove(dl[idx])
+for tr in dl:
+    name = tr.stats.station
+    if name in skip_list:
+        dl.remove(tr)
+
+l.sort(['az'])
+dl.sort(['az'])
 
 lmax = []
 for idx,tr in enumerate(l):
     name = tr.stats.station
     sr = tr.stats.sampling_rate
 
+    #print dl[idx].stats.station
     #This is the same as windowing on S1775P
     a = seispy.data.phase_window(tr,phase=['S1800P'],window=(-8,12))
     d = seispy.data.phase_window(dl[idx],['S1800P'],window=(-20,20))
@@ -107,8 +116,8 @@ for idx,tr in enumerate(l):
 
     if name == 'N10A':
         d.data = np.roll(d.data,int(sr*2.5))
-    elif name == 'OR074':
-        d.data = np.roll(d.data,int(sr*3.8))
+    elif name == 'R12A':
+        d.data = np.roll(d.data,int(sr*3.0))
     elif name == 'J11A':
         d.data = np.roll(d.data,int(sr*2.6))
     elif name == 'E060':
