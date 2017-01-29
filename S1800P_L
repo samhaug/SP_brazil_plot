@@ -49,18 +49,21 @@ q.sort(['az'])
 t.sort(['az'])
 
 gs = gridspec.GridSpec(45,115)
-fig = plt.figure(figsize=(8,5))
+fig = plt.figure(figsize=(7,5))
 fig.patch.set_visible(False)
 
 axl = plt.subplot(gs[0:45,0:35])
 axsh = plt.subplot(gs[0:45,40:75])
 axsv = plt.subplot(gs[0:45,80:115])
-axl.set_ylim(-2,18)
-axsh.set_ylim(-2,18)
-axsv.set_ylim(-2,18)
-axl.set_title('S1800P (L comp)')
-axsh.set_title('SH')
-axsv.set_title('SV')
+axl.set_ylim(-2,14)
+axsh.set_ylim(-2,14)
+axsv.set_ylim(-2,14)
+axl.set_title('S1800P displacement',size=10)
+axsh.set_title('SH displacement',size=10)
+axsv.set_title('SV displacement',size=10)
+axl.set_xlabel('Time (s)',size=8)
+axsh.set_xlabel('Time after SH(s)',size=8)
+axsv.set_xlabel('Time after SV(s)',size=8)
 
 for b in [axl,axsh,axsv]:
     b.spines['top'].set_visible(False)
@@ -90,7 +93,7 @@ for idx,tr in enumerate(l):
     #This is the same as windowing on S1775P
     a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
     tl = np.linspace(-10,10,num=len(a.data))
-    z = np.polyfit(tl,a.data,2)
+    z = np.polyfit(tl,a.data,4)
     p = np.poly1d(z)
     a.data += -1*p(tl)
     #print np.mean(a.data)
@@ -107,7 +110,7 @@ for idx,tr in enumerate(l):
     axl.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
     axl.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
     axl.text(-14,2*idx+0.44,name,size=6)
-    axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+    #axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
 
 for idx,tr in enumerate(q):
     name = tr.stats.station
