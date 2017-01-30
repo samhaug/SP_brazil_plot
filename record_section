@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+import obspy
+import numpy as np
+import seispy
+from matplotlib import pyplot as plt
+import sys
+import matplotlib.gridspec as gridspec
+from subprocess import call
+
+'''
+Plot record section of 2007 event with beachball, vespagram, and
+cross section through vespagram.
+
+takes a pickled stream of the 2007 event that has already been processed.
+'''
+
+st = obspy.read('/home/samhaug/work1/SP_brazil_data/record_section.pk')
+
+fig = plt.figure(figsize=(3.5,8))
+gs = gridspec.GridSpec(90,100)
+ax_sec1   = plt.subplot(gs[0:50,0:])
+ax_vesp1 = plt.subplot(gs[55:70,0:])
+ax_wave1 = plt.subplot(gs[75:90,0:])
+bbax1 = fig.add_axes((0.80,0.40,0.2,0.1))
+bbax1.axes.get_yaxis().set_visible(False)
+bbax1.axes.get_xaxis().set_visible(False)
+bbax1.set_frame_on(False)
+bbax1.patch.set_alpha(0)
+
+
+#######################################################################
+####### Plot record section
+#######################################################################
+
+'''
+print 'Plot record section'
+phase_dict = {'family': 'serif',
+              'color':  'black',
+              'weight': 'normal',
+              'size': 8
+             }
+
+seispy.plot.section(st,az_color=331,x_lim=(-10,160),ax_grab=ax_sec1,
+                    title=False,y_lim=(43,75))
+
+ax_sec1.set_xlabel('')
+ax_sec1.xaxis.set_ticklabels([])
+ax_sec1.set_title('Event A')
+focmec1 = [14,21,-61]
+b = obspy.imaging.beachball.beach(focmec1,xy=(0.5,0.5),width=0.5,linewidth=1,
+                                  facecolor='red')
+bbax1.add_collection(b)
+
+ax_sec1.text(0,55,'P',fontdict=phase_dict)
+ax_sec1.text(90,55,'PcP',fontdict=phase_dict)
+ax_sec1.text(130,73.5,'pP',fontdict=phase_dict)
+ax_sec1.text(90,73.5,'1800',fontdict=phase_dict)
+ax_sec1.text(65,73.5,'1500',fontdict=phase_dict)
+ax_sec1.text(35,73.5,'1150',fontdict=phase_dict)
+ax_sec1.set_ylim((54,75))
+ax_sec1.tick_params(axis='y', labelsize=10)
+
+'''
+
+######################################################################
+####### Plot vespagram
+######################################################################
+
+'''
+print 'Plot Vespagram'
+image1 = seispy.plot.vespagram(st,ax_grab=ax_vesp1,title=False,x_lim=(-10,160))
+ax_vesp1.set_ylabel('Slowness')
+ax_vesp1.tick_params(axis='y', labelsize=10)
+ax_vesp1.tick_params(axis='x', labelsize=10)
+ax_vesp1.xaxis.set_ticklabels([])
+
+'''
+
+######################################################################
+####### Plot cross section
+######################################################################
+
+coord_list = [536.881048387, 59.3697916667, 5478.16532258, 71.34375]
+section = seispy.plot.stack_amp(st,coord_list=coord_list)
+t = np.linspace(-10,160,num=len(section))
+ax_wave1.plot(t,2.3*section,color='k')
+ax_wave1.set_xlim(-10,160)
+ax_wave1.grid(alpha=0.5)
+ax_wave1.set_ylim((-1,1))
+ax_wave1.yaxis.set_ticklabels([])
+ax_wave1.set_xlabel('Seconds after P')
+ax_wave1.tick_params(axis='y', labelsize=10)
+ax_wave1.tick_params(axis='x', labelsize=10)
+
+plt.savefig('record_section.pdf')
+call('evince record_section.pdf',shell=True)
+
+
+'''
+####Colorbar
+bbox = ax_vesp2.get_position()
+xmax = bbox.xmax
+ymin = bbox.ymin
+ymax = bbox.ymax
+
+cax = fig.add_axes((xmax+0.02,ymax,0.02,ymin-ymax))
+cbar = fig.colorbar(image1,cax=cax,orientation='vertical')
+cbar.ax.invert_yaxis()
+cbar.set_ticks([0,-1,-2,-3])
+cbar.set_label(r'$\log(Amplitude)$')
+
+
+'''
