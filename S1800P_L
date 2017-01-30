@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from obspy.taup import TauPyModel
 from subprocess import call
+import matplotlib.patches as patches
 model = TauPyModel(model="prem50")
 
 '''
@@ -147,6 +148,8 @@ for idx,tr in enumerate(t):
     axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
     axsh.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
 
+p = patches.Rectangle((-2.0, -1.0), 5.0, 14.0,alpha=0.1,linewidth=None)
+axl.add_patch(p)
 plt.savefig('S1800P_L.pdf')
 call('evince S1800P_L.pdf',shell=True)
 
