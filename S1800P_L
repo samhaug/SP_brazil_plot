@@ -109,7 +109,7 @@ for idx,tr in enumerate(l):
     lmax.append(a_max)
     axl.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
     axl.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
-    axl.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
+    axl.text(5,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
     axl.text(-14,2*idx+0.44,name,size=6)
     #axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
 
