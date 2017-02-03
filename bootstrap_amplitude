@@ -1,0 +1,98 @@
+#!/home/samhaug/anaconda2/bin/python
+
+import numpy as np
+import obspy
+import scipy
+import seispy
+import h5py
+from matplotlib import pyplot as plt
+import time
+
+'''
+Find the amplitude of S1750P conversion with uncertainty by bootstrapping.
+
+make_h5 will save an h5 file with the data that can be used for quick
+bootstrapping. The other functions will operate on this h5 file. and give
+a bootstrapped result.
+'''
+
+def make_data_array(st):
+
+    a = []
+    st = seispy.filter.range_filter(st,(60,90))
+    st = seispy.data.normalize_on_phase(st,phase=['S'])
+
+    for idx,tr in enumerate(st):
+        b = tr.slice(tr.stats.starttime+145,tr.stats.starttime+172)
+        b = seispy.data.phase_window(tr,['S1700P'],window=(0,20))
+        a.append(b.data)
+
+    return np.array(a)
+
+def save_bootstrap(boot_array):
+    '''
+    This script performs a bootstrap on the data stack and saves
+    the h5py file in SP_brazil_data. You only need to run this once you have
+    made the original bootstrap. Or if you want to change a bootstrapping
+    parameter
+    '''
+    print('Kill now if you dont want to bootstrap again')
+    time.sleep(5)
+    print('Starting')
+    boot_list = []
+    for ii in range(1000):
+        single = []
+        for jj in range(0,boot_array.shape[0]):
+            idx = np.random.randint(0,boot_array.shape[0])
+            single.append(boot_array[idx])
+        single = np.array(single).mean(axis=0)
+        boot_list.append(single)
+    f = h5py.File('/home/samhaug/work1/SP_brazil_data/bootstrap_script.h5','w')
+    f.create_dataset('boot',data = np.array(boot_list))
+    f.close()
+
+def plot_bootstrap():
+
+    f = h5py.File('/home/samhaug/work1/SP_brazil_data/bootstrap_script.h5','r')
+    boot_list = f['boot'][...]
+    mean = np.array(boot_list).mean(axis=0)
+    std = np.array(boot_list).std(axis=0)
+
+    print len(mean)
+    t = np.linspace(-23,27,num=len(mean))
+    p = np.poly1d(np.polyfit(t,mean,4))
+    fig,ax = plt.subplots()
+
+    mean += -1*p(t)
+    ax.plot(t,mean,color='k')
+    ax.plot(t,mean+std,color='b')
+    ax.plot(t,mean-std,color='b')
+    ax.set_xlim((-10,10))
+    plt.show()
+
+def setup_stream():
+    l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
+    q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
+
+    #l.filter('highpass',freq=1/10.)
+    for idx, tr in enumerate(q):
+        q[idx].data = obspy.signal.filter.envelope(tr.data)
+        a = seispy.data.phase_window(tr,['S'],window=(-100,100))
+        max_S = a.data.max()
+        l[idx].data *= 1./max_S
+    return l
+
+#This is where the action is
+#l = setup_stream()
+#data = make_data_array(l)
+#save_bootstrap(data)
+plot_bootstrap()
+
+
+
+
+
+
+
+
+

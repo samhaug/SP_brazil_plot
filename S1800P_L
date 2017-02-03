@@ -116,7 +116,9 @@ for idx,tr in enumerate(l):
 for idx,tr in enumerate(q):
     name = tr.stats.station
     a = seispy.data.phase_window(tr,['S'],window=(-30,30))
-    a_max = np.abs(a.data).max()
+    env = obspy.signal.filter.envelope(a.data)
+    a_max = env.max()
+    #a_max = np.abs(a.data).max()
     a.normalize()
     a.data *= 0.9
     gcarc = tr.stats.sac['gcarc']
@@ -133,7 +135,9 @@ for idx,tr in enumerate(q):
 for idx,tr in enumerate(t):
     name = tr.stats.station
     a = seispy.data.phase_window(tr,['S'],window=(-30,30))
-    a_max = np.abs(a.data).max()
+    env = obspy.signal.filter.envelope(a.data)
+    a_max = env.max()
+    #a_max = np.abs(a.data).max()
     a.normalize()
     a.data *= 0.9
     gcarc = tr.stats.sac['gcarc']
