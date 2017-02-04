@@ -1,0 +1,60 @@
+#!/home/samhaug/anaconda2/bin/python
+
+import numpy as np
+import obspy
+import scipy
+import seispy
+import h5py
+from matplotlib import pyplot as plt
+import time
+
+'''
+plot synthetic amplitude of S1800P conversion
+'''
+
+def plot_synth(l):
+
+
+    #t = np.linspace(-23,27,num=len(mean))
+    #p = np.poly1d(np.polyfit(t,mean,4))
+    fig,ax = plt.subplots()
+
+    #mean += -1*p(t)
+    for idx,tr in enumerate(l):
+        a = seispy.data.phase_window(tr,['S1800P'],window=(-20,20))
+        ax.plot(idx+a.data,color='k')
+    plt.show()
+
+def setup_stream(z,n,e):
+    z = obspy.read(z)
+    n = obspy.read(n)
+    e = obspy.read(e)
+    z.integrate()
+    n.integrate()
+    e.integrate()
+    l,qf,tf = seispy.data.rotate_phase(z,n,e,['S1700P'])
+    lf,q,t = seispy.data.rotate_phase(z,n,e,['S'])
+
+    for idx,tr in enumerate(q):
+        q[idx].data = obspy.signal.filter.envelope(tr.data)
+        a = seispy.data.phase_window(q[idx],['S'],window=(-100,100))
+        l[idx].data *= 1./a.data.max()
+
+    return l
+
+#This is where the action is
+z = '/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_5km_na/st_Z.pk'
+n = '/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_5km_na/st_N.pk'
+e = '/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_5km_na/st_E.pk'
+
+l = setup_stream(z,n,e)
+plot_synth(l)
+
+
+
+
+
+
+
+
+

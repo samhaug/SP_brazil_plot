@@ -44,7 +44,6 @@ def plot_waveform(ax,tr,color,ls,label):
     tw = np.linspace(-10,10,a.stats.npts)
     ax.plot(tw,a.data,color=color,ls=ls,label=label,lw=0.5,alpha=0.7)
 
-
 def setup_trace(path_2_st):
     st = obspy.read(path_2_st)
     st.integrate().normalize()
