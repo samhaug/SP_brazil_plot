@@ -16,15 +16,42 @@ bootstrapping. The other functions will operate on this h5 file. and give
 a bootstrapped result.
 '''
 
-def make_data_array(st):
+def setup_data(sim_dir):
+    print('process '+sim_dir)
+    z = obspy.read(sim_dir+'/st_Z.pk')
+    e = obspy.read(sim_dir+'/st_E.pk')
+    n = obspy.read(sim_dir+'/st_N.pk')
+    l,qf,tf = seispy.data.rotate_phase(z,n,e,['S1800P'])
+    lf,q,t = seispy.data.rotate_phase(z,n,e,['S'])
+    data_list = []
+    q = seispy.filter.range_filter(q,(60,90))
+    l = seispy.filter.range_filter(l,(60,90))
+    l.integrate()
+    q.integrate()
+    for idx,tr in enumerate(l):
+        q[idx].data = obspy.signal.filter.envelope(q[idx].data)
+        s_tr = seispy.data.phase_window(q[idx],['S'],window=(-100,100))
+        tr.data *= 1./s_tr.data.max()
+        phase = seispy.data.phase_window(tr,phase=['S1800P'])
+        data_list.append(phase.data.max()-phase.data.min())
+    return data_list
 
+def setup_stream():
+    l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
+    q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
+    for idx, tr in enumerate(q):
+        q[idx].data = obspy.signal.filter.envelope(tr.data)
+        a = seispy.data.phase_window(tr,['S'],window=(-100,100))
+        max_S = a.data.max()
+        l[idx].data *= 1./max_S
+    return l
+
+def make_data_array(st):
     a = []
     st = seispy.filter.range_filter(st,(60,90))
     st = seispy.data.normalize_on_phase(st,phase=['S'])
-
     for idx,tr in enumerate(st):
-        b = tr.slice(tr.stats.starttime+145,tr.stats.starttime+172)
-        b = seispy.data.phase_window(tr,['S1700P'],window=(0,20))
+        b = seispy.data.phase_window(tr,['S1700P'],window=(-0,20))
         a.append(b.data)
 
     return np.array(a)
@@ -52,47 +79,59 @@ def save_bootstrap(boot_array):
     f.close()
 
 def plot_bootstrap():
-
+    '''
+    Plot a bootstrapped waveform along with a scatter plot of simulated 
+    amplitudes.
+    '''
     f = h5py.File('/home/samhaug/work1/SP_brazil_data/bootstrap_script.h5','r')
     boot_list = f['boot'][...]
     mean = np.array(boot_list).mean(axis=0)
     std = np.array(boot_list).std(axis=0)
 
-    print len(mean)
-    t = np.linspace(-23,27,num=len(mean))
+    t = np.linspace(-10,10,num=len(mean))
     p = np.poly1d(np.polyfit(t,mean,4))
-    fig,ax = plt.subplots()
+    fig,ax = plt.subplots(2,1,figsize=(3,5))
+
+    for b in ax:
+        b.spines['top'].set_visible(False)
+        b.spines['right'].set_visible(False)
+        b.tick_params(axis='both', which='major', labelsize=7)
+        b.xaxis.set_ticks_position('bottom')
 
     mean += -1*p(t)
-    ax.plot(t,mean,color='k')
-    ax.plot(t,mean+std,color='b')
-    ax.plot(t,mean-std,color='b')
-    ax.set_xlim((-10,10))
+    ax[0].plot(t,mean,color='k')
+    ax[0].fill_between(t,mean+std,mean-std,color='k',alpha=0.3)
+    ax[0].set_xlim((-6,6))
+    ax[0].set_ylim((-0.1,0.1))
+
+    ampmax = mean.max()
+    ampmin = mean.min()
+    amp = ampmax-ampmin
+    topstd = amp+std
+    botstd = amp-std
+    i_max = np.argmax(mean)
+    i_min = np.argmin(mean)
+    stdmax = topstd[i_max]-botstd[i_min]
+    stdmin = botstd[i_max]-topstd[i_min]
+    ax[1].axhline(amp,color='k')
+    ax[1].fill_between(np.linspace(0,-10),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
+    ax[1].set_ylim((0.0,0.2))
+
+    d_3 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na')
+    ax[1].scatter(-3,np.mean(d_3))
+    ax[1].scatter(-3,np.mean(d_3)+np.std(d_3))
+    ax[1].scatter(-3,np.mean(d_3)-np.std(d_3))
+    d_5 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na')
+    ax[1].scatter(-5,np.mean(d_5))
+    ax[1].scatter(-5,np.mean(d_5)+np.std(d_5))
+    ax[1].scatter(-5,np.mean(d_5)-np.std(d_5))
     plt.show()
-
-def setup_stream():
-    l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
-    q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
-
-    #l.filter('highpass',freq=1/10.)
-    for idx, tr in enumerate(q):
-        q[idx].data = obspy.signal.filter.envelope(tr.data)
-        a = seispy.data.phase_window(tr,['S'],window=(-100,100))
-        max_S = a.data.max()
-        l[idx].data *= 1./max_S
-    return l
 
 #This is where the action is
 #l = setup_stream()
 #data = make_data_array(l)
 #save_bootstrap(data)
 plot_bootstrap()
-
-
-
-
-
-
 
 
 
