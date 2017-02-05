@@ -8,6 +8,7 @@ import h5py
 from matplotlib import pyplot as plt
 import time
 
+from subprocess import call
 '''
 Find the amplitude of S1750P conversion with uncertainty by bootstrapping.
 
@@ -28,6 +29,7 @@ def setup_data(sim_dir):
     l = seispy.filter.range_filter(l,(60,90))
     l.integrate()
     q.integrate()
+
     for idx,tr in enumerate(l):
         q[idx].data = obspy.signal.filter.envelope(q[idx].data)
         s_tr = seispy.data.phase_window(q[idx],['S'],window=(-100,100))
@@ -115,6 +117,7 @@ def plot_bootstrap():
     stdmin = botstd[i_max]-topstd[i_min]
     ax[1].axhline(amp,color='k')
     ax[1].fill_between(np.linspace(0,-10),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
+    ax[1].set_xlim(0,-10)
     ax[1].set_ylim((0.0,0.2))
 
     d_3 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na')
@@ -125,7 +128,12 @@ def plot_bootstrap():
     ax[1].scatter(-5,np.mean(d_5))
     ax[1].scatter(-5,np.mean(d_5)+np.std(d_5))
     ax[1].scatter(-5,np.mean(d_5)-np.std(d_5))
-    plt.show()
+    d_7 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/0_-7_0_10km_na')
+    ax[1].scatter(-7,np.mean(d_7))
+    ax[1].scatter(-7,np.mean(d_7)+np.std(d_7))
+    ax[1].scatter(-7,np.mean(d_7)-np.std(d_7))
+    plt.savefig('bootstrap_amplitude.pdf')
+    call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
 #l = setup_stream()
