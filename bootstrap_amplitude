@@ -102,8 +102,8 @@ def plot_bootstrap():
         b.yaxis.set_ticks_position('left')
 
     mean += -1*p(t)
-    ax[0].set_ylabel('|A|',size=7)
-    ax[0].set_xlabel('Seconds',size=7)
+    ax[0].set_ylabel('|A|',size=8)
+    ax[0].set_xlabel('Seconds',size=8)
     ax[0].plot(t,mean,color='k',lw=0.5)
     ax[0].fill_between(t,mean+std,mean-std,color='k',alpha=0.2)
     ax[0].set_xlim((-6,6))
@@ -120,8 +120,8 @@ def plot_bootstrap():
     i_min = np.argmin(mean)
     stdmax = topstd[i_max]-botstd[i_min]
     stdmin = botstd[i_max]-topstd[i_min]
-    ax[1].set_ylabel('|A|',size=7)
-    ax[1].set_xlabel(r'Percent $\delta  V_{S}$',size=7)
+    ax[1].set_ylabel('|A|',size=8)
+    ax[1].set_xlabel(r'Percent $\delta  V_{S}$',size=8)
     ax[1].axhline(amp,color='k',lw=0.5)
     ax[1].fill_between(np.linspace(0,-20),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
     ax[1].set_xlim(-2,-12)
