@@ -17,7 +17,7 @@ bootstrapping. The other functions will operate on this h5 file. and give
 a bootstrapped result.
 '''
 
-def setup_data(sim_dir):
+def setup_synth(sim_dir):
     print('process '+sim_dir)
     z = obspy.read(sim_dir+'/st_Z.pk')
     e = obspy.read(sim_dir+'/st_E.pk')
@@ -38,7 +38,7 @@ def setup_data(sim_dir):
         data_list.append(phase.data.max()-phase.data.min())
     return data_list
 
-def setup_stream():
+def setup_data():
     l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
     q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
     for idx, tr in enumerate(q):
@@ -97,7 +97,7 @@ def plot_bootstrap():
     for b in ax:
         b.spines['top'].set_visible(False)
         b.spines['right'].set_visible(False)
-        b.tick_params(axis='both', which='major', labelsize=6)
+        b.tick_params(axis='both', which='major', labelsize=5)
         b.xaxis.set_ticks_position('bottom')
         b.yaxis.set_ticks_position('left')
 
@@ -121,35 +121,32 @@ def plot_bootstrap():
     stdmax = topstd[i_max]-botstd[i_min]
     stdmin = botstd[i_max]-topstd[i_min]
     ax[1].set_ylabel('|A|',size=7)
-    ax[1].set_xlabel(r'Percent $\delta V_{S}$',size=7)
+    ax[1].set_xlabel(r'Percent $\delta  V_{S}$',size=7)
     ax[1].axhline(amp,color='k',lw=0.5)
-    ax[1].fill_between(np.linspace(0,-10),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
-    ax[1].set_xlim(0,-10)
+    ax[1].fill_between(np.linspace(0,-20),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
+    ax[1].set_xlim(-2,-12)
     ax[1].set_ylim((0.0,0.2))
 
-    d_3 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na')
-    #ax[1].scatter(-3,np.mean(d_3),marker='*',s=3)
+    d_3 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na')
     ax[1].errorbar(-3, np.mean(d_3), yerr=np.std(d_3),color='k')
-    #ax[1].scatter(-3,np.mean(d_3)+np.std(d_3),marker='o',s=1)
-    #ax[1].scatter(-3,np.mean(d_3)-np.std(d_3),marker='o',s=1)
-    d_5 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na')
-    #ax[1].scatter(-5,np.mean(d_5),marker='*',s=3)
+    d_5 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na')
     ax[1].errorbar(-5, np.mean(d_5), yerr=np.std(d_5),color='k')
-    #ax[1].scatter(-5,np.mean(d_5)+np.std(d_5),marker='o',s=1)
-    #ax[1].scatter(-5,np.mean(d_5)-np.std(d_5),marker='o',s=1)
-    d_7 = setup_data('/home/samhaug/work1/SP_brazil_sims/memex/0_-7_0_10km_na')
-    #ax[1].scatter(-7,np.mean(d_7),marker='*',s=3)
+    d_7 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/0_-7_0_10km_na')
     ax[1].errorbar(-7, np.mean(d_7), yerr=np.std(d_7),color='k')
-    #ax[1].scatter(-7,np.mean(d_7)+np.std(d_7),marker='o',s=1)
-    #ax[1].scatter(-7,np.mean(d_7)-np.std(d_7),marker='o',s=1)
+    d_9 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-9_0_10km_na')
+    ax[1].errorbar(-9, np.mean(d_9), yerr=np.std(d_9),color='k')
+    d_11 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-11_0_10km_na')
+    ax[1].errorbar(-11, np.mean(d_11), yerr=np.std(d_11),color='k')
 
+    plt.figtext(0.08,0.97,'(a)',size=8)
+    plt.figtext(0.08,0.50,'(b)',size=8)
     plt.tight_layout()
 
     plt.savefig('bootstrap_amplitude.pdf')
     call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
-#l = setup_stream()
+#l = setup_data()
 #data = make_data_array(l)
 #save_bootstrap(data)
 plot_bootstrap()
