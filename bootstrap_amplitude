@@ -41,6 +41,8 @@ def setup_synth(sim_dir):
 def setup_data():
     l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
     q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
+    l.filter('lowpass',freq=0.75)
+    q.filter('lowpass',freq=0.75)
     for idx, tr in enumerate(q):
         q[idx].data = obspy.signal.filter.envelope(tr.data)
         a = seispy.data.phase_window(tr,['S'],window=(-100,100))
@@ -146,9 +148,9 @@ def plot_bootstrap():
     call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
-#l = setup_data()
-#data = make_data_array(l)
-#save_bootstrap(data)
+l = setup_data()
+data = make_data_array(l)
+save_bootstrap(data)
 plot_bootstrap()
 
 
