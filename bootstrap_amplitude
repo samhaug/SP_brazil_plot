@@ -148,9 +148,9 @@ def plot_bootstrap():
     call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
-l = setup_data()
-data = make_data_array(l)
-save_bootstrap(data)
+#l = setup_data()
+#data = make_data_array(l)
+#save_bootstrap(data)
 plot_bootstrap()
 
 
