@@ -1,0 +1,18 @@
+#!/home/samhaug/anaconda2/bin/python
+
+import numpy as np
+import seispy
+from matplotlib import pyplot as plt
+
+data_dir = '/home/samhaug/work1/SP_brazil_data/'
+st = obspy.read('data_dir'+'2007_full.pk')
+st = seispy.filter.range_filter(st,(55,90))
+
+sts = st.copy()
+
+vesp_dict = {}
+for idx,tr in enumerate(st):
+    sts[idx].data = tr.slice(tr.stats.starttime,tr.stats.starttime+1000)
+     = tr.slice(tr.stats.starttime,tr.stats.starttime+1000)
+
+
