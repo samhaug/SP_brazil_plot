@@ -6,7 +6,7 @@ import seispy
 from sys import argv
 from obspy.taup import TauPyModel
 from matplotlib import pyplot as plt
-model = TauPyModel(model='prem_50')
+model = TauPyModel(model='prem50')
 
 data = obspy.read(argv[1])
 st = obspy.read(argv[2])

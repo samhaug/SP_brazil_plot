@@ -74,13 +74,11 @@ def set_figure():
     return [ax1,ax2,ax3,ax4,ax5,ax6],[sax1,sax2,sax3,sax4,sax5,sax6]
 
 def import_boot_h5(name):
-
     print('import_boot_h5')
     f = h5py.File(name,'r')
     return f[...]
 
 def prep_stream(st_in,ax,sax,**kwargs):
-
     ist = kwargs.get('ist',1)
     print('prep_stream {}'.format(str(ist)))
     az_lim = kwargs.get('az_lim',False)
@@ -146,8 +144,6 @@ def prep_wrapper(in_tuple):
     Wrapper to be used for parallel runs
     '''
     return prep_stream(*in_tuple[0],**in_tuple[1])
-
-
 
 st_in = obspy.read(sys.argv[1])
 

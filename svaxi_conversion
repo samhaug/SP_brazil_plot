@@ -13,7 +13,7 @@ def main():
     prem_dir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/share_first/smoothedprem/'
     syn_dir = sorted(listdir(dir_name))
 
-    fig,ax = plt.subplots()
+    fig,ax = plt.subplots(figsize=(3,3))
     st_prem = obspy.read(prem_dir+'/*170.R')
     #st_prem.normalize()
     prem = grab_conversion(st_prem[0])
@@ -50,16 +50,23 @@ def main():
 
         #ax[1].legend()
 
-    ax.grid()
-    ax.set_xlabel('Seconds')
+    #ax.grid()
+    ax.set_xlabel('Seconds',size=7)
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False)
+    #ax.spines['left'].set_visible(False)
+    ax.yaxis.set_ticklabels([])
+    ax.yaxis.set_ticks([])
+    ax.tick_params(axis='both', which='major', labelsize=7)
+    ax.xaxis.set_ticks_position('bottom')
+    #ax.set_ylim((-0.05,0.05))
     ax.legend()
+    l1 = ax.legend(loc='upper right',prop={'size':6},frameon=False)
     plt.tight_layout()
     plt.savefig('svaxi_conversion.pdf')
     call('evince svaxi_conversion.pdf',shell=True)
-
-
+     
 def grab_conversion(tr):
-
     tr.stats.sac['o'] += -202
     a = seispy.data.phase_window(tr,phase=['S1800P'],window=(-20,10))
     #a.detrend()

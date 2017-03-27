@@ -5,7 +5,7 @@ import obspy
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 
-st = obspy.read('final_sparse_data.pk')
+st = obspy.read('/home/samhaug/work1/SP_brazil_data/final_sparse_data.pk')
 st = seispy.data.normalize_on_phase(st,phase=['S'])
 
 data_list = []
@@ -43,7 +43,7 @@ for b in [ax,ax1]:
     b.tick_params(axis='both', which='major', labelsize=7)
 
 for idx, ii in enumerate(data_list):
-    s = seispy.data.phase_window(st[idx],['S'],(-50,50)).data
+    s = seispy.data.phase_window(st[idx],phase=['S'],window=(-50,50)).data
     ts = np.linspace(-50,50,num=len(s))
     ax.plot(t,2*idx+ii,color='k')
     ax1.plot(ts,2*idx+s,color='k')
