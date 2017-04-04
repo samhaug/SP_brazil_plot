@@ -30,12 +30,15 @@ def setup_synth(sim_dir):
     l.integrate()
     q.integrate()
 
+    #seispy.plot.plot(l[1],phase_list=['S','S1800P'])
+    #seispy.plot.plot(q[1],phase_list=['S','S1800P'])
     for idx,tr in enumerate(l):
         q[idx].data = obspy.signal.filter.envelope(q[idx].data)
         s_tr = seispy.data.phase_window(q[idx],['S'],window=(-100,100))
         tr.data *= 1./s_tr.data.max()
         phase = seispy.data.phase_window(tr,phase=['S1800P'])
         data_list.append(phase.data.max()-phase.data.min())
+
     return data_list
 
 def setup_data():
@@ -84,7 +87,7 @@ def save_bootstrap(boot_array):
 
 def plot_bootstrap():
     '''
-    Plot a bootstrapped waveform along with a scatter plot of simulated 
+    Plot a bootstrapped waveform along with a scatter plot of simulated
     amplitudes.
     '''
     f = h5py.File('/home/samhaug/work1/SP_brazil_data/bootstrap_script.h5','r')

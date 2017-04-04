@@ -6,7 +6,7 @@
 File Name : slab_tilt.py
 Purpose : Compare SxP amplitudes from different tilting slabs.
 Creation Date : 27-03-2017
-Last Modified : Mon 27 Mar 2017 06:39:09 PM EDT
+Last Modified : Tue 28 Mar 2017 02:06:48 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -19,6 +19,8 @@ from os import listdir
 import h5py
 import obspy
 import seispy
+from obspy.taup import TauPyModel
+model = TauPyModel(model='prem')
 
 def main():
     svdir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/0327_shareseismos/shareseismos/'
@@ -27,19 +29,26 @@ def main():
 
     for dir in part[::5]:
         print dir
-        st = setup_stream(svdir+dir)
+        stp = obspy.read(svdir+dir+'/stp.pk')
+        sts = obspy.read(svdir+dir+'/sts.pk')
+        for idx,tr in enumerate(sts):
+            a = seispy.data.phase_window(tr,['S'],window=(-30,30))
+            stp[idx].data *= 1./np.abs(a).max()
 
-def setup_stream(dir):
-    st = obspy.read(dir+'/*0.Z')
-    for tr in st:
-        tr.stats.sac['o'] += -202.
-    st = seispy.data.normalize_on_phase(st,phase=['S'])
-    return st
+        #stp = strip_conversion(stp)
+        for tr in stp:
+            plt.plot(tr.data,color='k',alpha=0.5)
+        plt.show()
 
 def strip_conversion(st):
     for idx,tr in enumerate(st):
-        st[idx] = seispy.data.phase_window(st[idx],phase=['S'],window=(-20,20))
-    return st_strip
+        st[idx] = seispy.data.phase_window(st[idx],phase=['S1800P'],window=(-30,10))
+    return st
+
+def plot_wave_conversion(st_strip,ax):
+    for tr in st_strip:
+        ax.plot(tr.data,color='k',alpha=0.5)
+    plt.show()
 
 def stats_conversion(st_strip):
     conv = []
