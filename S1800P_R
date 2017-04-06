@@ -31,12 +31,25 @@ for tr in stn:
 for tr in ste:
     tr.stats.az = tr.stats.sac['az']
 
-l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
-fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
+#l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
+#fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
 
+#Adding this to rotate to Radial coordinates
+r = stn.copy()
+t = ste.copy()
 
-l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
-q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
+for idx, tr in enumerate(stn):
+    n = stn[idx].data
+    e = ste[idx].data
+    ne = np.vstack((n,e))
+    rot = np.array([[np.cos(np.radians(tr.stats.sac['az'])),np.sin(np.radians(tr.stats.sac['az']))],
+                 [-1*np.sin(np.radians(tr.stats.sac['az'])),np.cos(np.radians(tr.stats.sac['az']))]])
+    rt = np.dot(rot,ne)
+    r[idx].data = rt[0,:]
+    t[idx].data = rt[1,:]
+
+l = seispy.data.align_on_phase(r,phase =['P'],window_tuple=(-20,20))
+q = seispy.data.align_on_phase(r,phase =['S'],window_tuple=(-20,20),min=False)
 t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
 
 for tr in l:
@@ -78,12 +91,13 @@ for b in [axl,axsh,axsv]:
 
 skip_list = ['OR074','V19A']
 
-for idx, tr in enumerate(l):
-    name = tr.stats.station
-    if name in skip_list:
-        l.remove(tr)
-        q.remove(q[idx])
-        t.remove(t[idx])
+
+#for idx, tr in enumerate(l):
+#    name = tr.stats.station
+#    if name in skip_list:
+#        l.remove(tr)
+#        q.remove(q[idx])
+#        t.remove(t[idx])
 
 l.sort(['az'])
 
@@ -158,7 +172,7 @@ plt.figtext(0.38,0.94,'(b)',size=7)
 plt.figtext(0.65,0.94,'(c)',size=7)
 p = patches.Rectangle((-2.0, -1.0), 5.0, 14.0,alpha=0.1,linewidth=None)
 axl.add_patch(p)
-plt.savefig('S1800P_L.pdf')
+plt.savefig('S1800P_R.pdf')
 call('evince S1800P_L.pdf',shell=True)
 
 

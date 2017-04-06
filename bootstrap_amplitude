@@ -24,18 +24,19 @@ def setup_synth(sim_dir):
     n = obspy.read(sim_dir+'/st_N.pk')
     l,qf,tf = seispy.data.rotate_phase(z,n,e,['S1800P'])
     lf,q,t = seispy.data.rotate_phase(z,n,e,['S'])
+    #l = z.copy()
+    #q,t = seispy.rotate.rotate_ne_rt(n,e)
     data_list = []
     q = seispy.filter.range_filter(q,(60,90))
     l = seispy.filter.range_filter(l,(60,90))
     l.integrate()
     q.integrate()
 
-    #seispy.plot.plot(l[1],phase_list=['S','S1800P'])
-    #seispy.plot.plot(q[1],phase_list=['S','S1800P'])
     for idx,tr in enumerate(l):
-        q[idx].data = obspy.signal.filter.envelope(q[idx].data)
-        s_tr = seispy.data.phase_window(q[idx],['S'],window=(-100,100))
-        tr.data *= 1./s_tr.data.max()
+        #q[idx].data = obspy.signal.filter.envelope(q[idx].data)
+        s_tr = seispy.data.phase_window(q[idx],['S'],window=(-50,50))
+        #seispy.plot.plot(s_tr)
+        tr.data *= 1./np.abs(s_tr.data.max())
         phase = seispy.data.phase_window(tr,phase=['S1800P'])
         data_list.append(phase.data.max()-phase.data.min())
 
@@ -44,9 +45,11 @@ def setup_synth(sim_dir):
 def setup_data():
     l = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
     q = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
-    l.filter('lowpass',freq=0.75)
-    q.filter('lowpass',freq=0.75)
+    l.filter('lowpass',freq=0.50)
+    q.filter('lowpass',freq=0.50)
     for idx, tr in enumerate(q):
+        q[idx].data*=np.cos(np.radians(20))
+        l[idx].data*=np.sin(np.radians(17))
         q[idx].data = obspy.signal.filter.envelope(tr.data)
         a = seispy.data.phase_window(tr,['S'],window=(-100,100))
         max_S = a.data.max()
@@ -115,8 +118,8 @@ def plot_bootstrap():
     ax[0].set_ylim((-0.1,0.1))
     ax[0].axvspan(-2, 2, alpha=0.2, color='blue')
 
-
     ampmax = mean.max()
+    print ampmax
     ampmin = mean.min()
     amp = ampmax-ampmin
     topstd = amp+std
@@ -151,9 +154,9 @@ def plot_bootstrap():
     call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
-#l = setup_data()
-#data = make_data_array(l)
-#save_bootstrap(data)
+l = setup_data()
+data = make_data_array(l)
+save_bootstrap(data)
 plot_bootstrap()
 
 
