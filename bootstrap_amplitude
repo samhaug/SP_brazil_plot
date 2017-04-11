@@ -56,12 +56,30 @@ def setup_data():
         l[idx].data *= 1./max_S
     return l
 
+def setup_data_RZ():
+    r = obspy.read('/home/samhaug/work1/SP_brazil_data/2007-07-21-mw60-western-brazil-4/sparse_R.pk')
+    z = obspy.read('/home/samhaug/work1/SP_brazil_data/2007-07-21-mw60-western-brazil-4/sparse_Z.pk')
+    z.filter('highpass',freq=1./20)
+    r.filter('highpass',freq=1./20)
+    for idx, tr in enumerate(r):
+        r[idx].data = obspy.signal.filter.envelope(tr.data)
+        #seispy.plot.plot(r[idx],phase_list=['S'])
+        a = seispy.data.phase_window(r[idx],['S'],window=(-30,30))
+        z[idx].data *= 1./a.max()
+    print len(z)
+    seispy.plot.simple_section(z,a_list=['S1800P'],picker=True)
+    print len(z)
+    #zf = z.copy()
+
+    #zf.filter('lowpass',freq=0.5)
+    return z
+
 def make_data_array(st):
     a = []
-    st = seispy.filter.range_filter(st,(60,90))
-    st = seispy.data.normalize_on_phase(st,phase=['S'])
+    #st = seispy.filter.range_filter(st,(60,90))
+    #st = seispy.data.normalize_on_phase(st,phase=['S'])
     for idx,tr in enumerate(st):
-        b = seispy.data.phase_window(tr,['S1700P'],window=(-0,20))
+        b = seispy.data.phase_window(tr,['S1800P'],window=(-20,20))
         a.append(b.data)
 
     return np.array(a)
@@ -131,10 +149,13 @@ def plot_bootstrap():
     ax[1].set_ylabel('|A|',size=8)
     ax[1].set_xlabel(r'Percent $\delta  V_{S}$',size=8)
     ax[1].axhline(amp,color='k',lw=0.5)
+    print 'amp: ',amp
+    print 'amp+stdmin: ',amp+stdmin
+    print 'amp+stdmax: ',amp-stdmax
     ax[1].fill_between(np.linspace(0,-20),amp+stdmax,amp+stdmin,color='k',alpha=0.3)
     ax[1].set_xlim(-2,-12)
     ax[1].set_ylim((0.0,0.2))
-
+    '''
     d_3 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-3_0_10km_na')
     ax[1].errorbar(-3, np.mean(d_3), yerr=np.std(d_3),color='k')
     d_5 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-5_0_10km_na')
@@ -146,6 +167,7 @@ def plot_bootstrap():
     d_11 = setup_synth('/home/samhaug/work1/SP_brazil_sims/memex/2s_0_-11_0_10km_na')
     ax[1].errorbar(-11, np.mean(d_11), yerr=np.std(d_11),color='k')
 
+    '''
     plt.figtext(0.08,0.97,'(a)',size=8)
     plt.figtext(0.08,0.50,'(b)',size=8)
     plt.tight_layout()
@@ -154,7 +176,7 @@ def plot_bootstrap():
     call('evince bootstrap_amplitude.pdf',shell=True)
 
 #This is where the action is
-l = setup_data()
+l = setup_data_RZ()
 data = make_data_array(l)
 save_bootstrap(data)
 plot_bootstrap()
