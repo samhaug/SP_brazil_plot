@@ -6,7 +6,7 @@
 File Name : normalize_svaxi.py
 Purpose : normalize SVaxi radial components to mimic Z component.
 Creation Date : 06-04-2017
-Last Modified : Sun 09 Apr 2017 05:28:18 PM EDT
+Last Modified : Fri 14 Apr 2017 06:29:47 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -22,7 +22,8 @@ import seispy
 
 def main():
     homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/0327_shareseismos/shareseismos/'
-    fig,ax_list = setup_figure()
+    d_rat,s_rat = read_ratio('/home/samhaug/work1/SP_brazil_setup/ratio.dat')
+    fig,ax_list = setup_figure(d_rat)
     stprem = obspy.read(homedir+'smoothprem/stv.pk')
     for dir in listdir(homedir):
         if dir == 'smoothprem':
@@ -38,16 +39,16 @@ def main():
 
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h5_dVs5':
             ax_list[0][0].set_title('h5_dVs5',size=10)
-            ax = plot_amp(st,ax_list[0][0],ang)
+            ax = plot_amp(st,ax_list[0][0],ang,s_rat)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h10_dVs10':
             ax_list[1][1].set_title('h10_dVs10',size=10)
-            ax = plot_amp(st,ax_list[1][1],ang)
+            ax = plot_amp(st,ax_list[1][1],ang,s_rat)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h5_dVs10':
             ax_list[0][1].set_title('h5_dVs10',size=10)
-            ax = plot_amp(st,ax_list[0][1],ang)
+            ax = plot_amp(st,ax_list[0][1],ang,s_rat)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h10_dVs5':
             ax_list[1][0].set_title('h10_dVs5',size=10)
-            ax = plot_amp(st,ax_list[1][0],ang)
+            ax = plot_amp(st,ax_list[1][0],ang,s_rat)
     plt.savefig('normalize_svaxi.pdf')
     call('evince normalize_svaxi.pdf',shell=True)
 
@@ -69,11 +70,11 @@ def read_synth(dir):
     #    tr.data *= 1./np.tan(np.radians(17))
     return st
 
-def setup_figure():
+def setup_figure(d_rat):
     fig,ax_list = plt.subplots(2,2,figsize=(5,5))
 
-    amp = 0.0684
-    std = 0.0319
+    amp = 0.059*d_rat
+    std = 0.01
     for ax in ax_list.reshape(ax_list.size):
         #ax.yaxis.set_ticklabels([])
         #ax.yaxis.set_ticks([])
@@ -95,7 +96,7 @@ def setup_figure():
 
     return fig,ax_list
 
-def plot_amp(st,ax,ang):
+def plot_amp(st,ax,ang,s_rat):
     a = []
     for tr in st:
         d = seispy.data.phase_window(tr,['S1800P'],window=(-12,8)).data
@@ -103,7 +104,13 @@ def plot_amp(st,ax,ang):
     #for ii in b:
     #    ax1.plot(ii,color='k',alpha=0.5)
     #plt.show()
-    ax.errorbar(ang, np.mean(a),yerr=np.std(a),color='k')
+    ax.errorbar(ang, np.mean(a)*s_rat,yerr=np.std(a),color='k')
+
+def read_ratio(ratio_file):
+    a = np.genfromtxt(ratio_file)
+    data_rat = np.mean(a[:,1])
+    synth_rat = np.mean(a[:,2])
+    return data_rat,synth_rat
 
 main()
 

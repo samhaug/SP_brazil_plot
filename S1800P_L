@@ -9,155 +9,158 @@ from subprocess import call
 import matplotlib.patches as patches
 model = TauPyModel(model="prem50")
 
-'''
-Plot data of L component S1800P conversion alongside SV and SH
-data.
-'''
-stz = obspy.read('/home/samhaug/work1/SP_brazil_data/BHZ.pk')
-stn = obspy.read('/home/samhaug/work1/SP_brazil_data/BHN.pk')
-ste = obspy.read('/home/samhaug/work1/SP_brazil_data/BHE.pk')
+def wave_plot():
+    '''
+    Plot data of L component S1800P conversion alongside SV and SH
+    data.
+    '''
+    stz = obspy.read('/home/samhaug/work1/SP_brazil_data/BHZ.pk')
+    stn = obspy.read('/home/samhaug/work1/SP_brazil_data/BHN.pk')
+    ste = obspy.read('/home/samhaug/work1/SP_brazil_data/BHE.pk')
 
-stz = seispy.filter.gimp_filter(stz)
-stz.filter('highpass',freq=1/50.)
-ste = seispy.filter.gimp_filter(ste)
-ste.filter('highpass',freq=1/50.)
-stn = seispy.filter.gimp_filter(stn)
-stn.filter('highpass',freq=1/50.)
+    stz = seispy.filter.gimp_filter(stz)
+    stz.filter('highpass',freq=1/50.)
+    ste = seispy.filter.gimp_filter(ste)
+    ste.filter('highpass',freq=1/50.)
+    stn = seispy.filter.gimp_filter(stn)
+    stn.filter('highpass',freq=1/50.)
 
-for tr in stz:
-    tr.stats.az = tr.stats.sac['az']
-for tr in stn:
-    tr.stats.az = tr.stats.sac['az']
-for tr in ste:
-    tr.stats.az = tr.stats.sac['az']
+    for tr in stz:
+        tr.stats.az = tr.stats.sac['az']
+    for tr in stn:
+        tr.stats.az = tr.stats.sac['az']
+    for tr in ste:
+        tr.stats.az = tr.stats.sac['az']
 
-l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
-fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
-
-
-l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
-q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
-t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
-
-for tr in l:
-    tr.stats.az = tr.stats.sac['az']
-for tr in q:
-    tr.stats.az = tr.stats.sac['az']
-for tr in t:
-    tr.stats.az = tr.stats.sac['az']
-
-l.sort(['az'])
-q.sort(['az'])
-t.sort(['az'])
-
-gs = gridspec.GridSpec(45,115)
-fig = plt.figure(figsize=(7,5))
-fig.patch.set_visible(False)
-
-axl = plt.subplot(gs[0:45,0:35])
-axsh = plt.subplot(gs[0:45,40:75])
-axsv = plt.subplot(gs[0:45,80:115])
-axl.set_ylim(-2,14)
-axsh.set_ylim(-2,14)
-axsv.set_ylim(-2,14)
-axl.set_title('S1800P displacement',size=8)
-axsh.set_title('SH displacement',size=8)
-axsv.set_title('SV displacement',size=8)
-axl.set_xlabel('Time (s)',size=8)
-axsh.set_xlabel('Time after SH(s)',size=8)
-axsv.set_xlabel('Time after SV(s)',size=8)
-
-for b in [axl,axsh,axsv]:
-    b.spines['top'].set_visible(False)
-    b.spines['right'].set_visible(False)
-    b.spines['left'].set_visible(False)
-    b.yaxis.set_ticklabels([])
-    b.yaxis.set_ticks([])
-    b.tick_params(axis='both', which='major', labelsize=6)
-    b.xaxis.set_ticks_position('bottom')
-
-skip_list = ['OR074','V19A']
-
-for idx, tr in enumerate(l):
-    name = tr.stats.station
-    if name in skip_list:
-        l.remove(tr)
-        q.remove(q[idx])
-        t.remove(t[idx])
-
-l.sort(['az'])
+    l,fq,ft = seispy.data.rotate_phase(stz,stn,ste,['S1850P'])
+    fuck,q,t = seispy.data.rotate_phase(stz,stn,ste,['S'])
 
 
-lmax = []
-for idx,tr in enumerate(l):
-    name = tr.stats.station
-    #print name
-    #This is the same as windowing on S1775P
-    a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
-    tl = np.linspace(-10,10,num=len(a.data))
-    z = np.polyfit(tl,a.data,4)
-    p = np.poly1d(z)
-    a.data += -1*p(tl)
-    #print np.mean(a.data)
-    a.data += -1*np.mean(a.data)
-    a_max = np.abs(a.data).max()
-    a.normalize()
-    a.data *= 0.7
-    gcarc = tr.stats.sac['gcarc']
-    az = tr.stats.sac['az']
-    h = tr.stats.sac['evdp']
+    l = seispy.data.align_on_phase(l,phase =['P'],window_tuple=(-20,20))
+    q = seispy.data.align_on_phase(q,phase =['S'],window_tuple=(-20,20),min=False)
+    t = seispy.data.align_on_phase(t,phase =['S'],window_tuple=(-20,20))
 
-    lmax.append(a_max)
-    axl.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
-    axl.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
-    axl.text(5,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
-    axl.text(-14,2*idx+0.44,name,size=6)
-    #axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+    for tr in l:
+        tr.stats.az = tr.stats.sac['az']
+    for tr in q:
+        tr.stats.az = tr.stats.sac['az']
+    for tr in t:
+        tr.stats.az = tr.stats.sac['az']
 
-for idx,tr in enumerate(q):
-    name = tr.stats.station
-    a = seispy.data.phase_window(tr,['S'],window=(-30,30))
-    env = obspy.signal.filter.envelope(a.data)
-    a_max = env.max()
-    #a_max = np.abs(a.data).max()
-    a.normalize()
-    a.data *= 0.9
-    gcarc = tr.stats.sac['gcarc']
-    az = tr.stats.sac['az']
-    h = tr.stats.sac['evdp']
-    tl = np.linspace(-30,30,num=len(a.data))
-    axsv.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
-    #axsv.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
-    #axsv.text(-14,2*idx+0.44,name,size=6)
-    axsv.set_xlim(-30,30)
-    axsv.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
-    axsv.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
+    l.sort(['az'])
+    q.sort(['az'])
+    t.sort(['az'])
 
-for idx,tr in enumerate(t):
-    name = tr.stats.station
-    a = seispy.data.phase_window(tr,['S'],window=(-30,30))
-    env = obspy.signal.filter.envelope(a.data)
-    a_max = env.max()
-    #a_max = np.abs(a.data).max()
-    a.normalize()
-    a.data *= 0.9
-    gcarc = tr.stats.sac['gcarc']
-    az = tr.stats.sac['az']
-    h = tr.stats.sac['evdp']
-    tl = np.linspace(-30,30,num=len(a.data))
-    axsh.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
-    #axsh.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
-    #axsh.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=6)
-    #axsh.text(-14,2*idx+0.44,name,size=6)
-    axsh.set_xlim(-30,30)
-    axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
-    axsh.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
+    gs = gridspec.GridSpec(45,115)
+    fig = plt.figure(figsize=(7,5))
+    fig.patch.set_visible(False)
 
-plt.figtext(0.08,0.94,'(a)',size=7)
-plt.figtext(0.38,0.94,'(b)',size=7)
-plt.figtext(0.65,0.94,'(c)',size=7)
-p = patches.Rectangle((-2.0, -1.0), 5.0, 14.0,alpha=0.1,linewidth=None)
-axl.add_patch(p)
+    axl = plt.subplot(gs[0:45,0:35])
+    axsh = plt.subplot(gs[0:45,40:75])
+    axsv = plt.subplot(gs[0:45,80:115])
+    axl.set_ylim(-2,14)
+    axsh.set_ylim(-2,14)
+    axsv.set_ylim(-2,14)
+    axl.set_title(r'$S_{1750}P$'+' displacement',size=8)
+    axsh.set_title(r'$S_H$'+' displacement',size=8)
+    axsv.set_title(r'$S_V$'+' displacement',size=8)
+    axl.set_xlabel('Time (s)',size=8)
+    axsh.set_xlabel('Time after '+r'$S_H$ (s)',size=8)
+    axsv.set_xlabel('Time after '+r'$S_V$ (s)',size=8)
+
+    for b in [axl,axsh,axsv]:
+        b.spines['top'].set_visible(False)
+        b.spines['right'].set_visible(False)
+        b.spines['left'].set_visible(False)
+        b.yaxis.set_ticklabels([])
+        b.yaxis.set_ticks([])
+        b.tick_params(axis='both', which='major', labelsize=6)
+        b.xaxis.set_ticks_position('bottom')
+
+    skip_list = ['OR074','V19A']
+
+    for idx, tr in enumerate(l):
+        name = tr.stats.station
+        if name in skip_list:
+            l.remove(tr)
+            q.remove(q[idx])
+            t.remove(t[idx])
+
+    l.sort(['az'])
+
+
+    lmax = []
+    for idx,tr in enumerate(l):
+        name = tr.stats.station
+        #print name
+        #This is the same as windowing on S1775P
+        a = seispy.data.phase_window(tr,['S1750P'],window=(-8,12))
+        tl = np.linspace(-10,10,num=len(a.data))
+        z = np.polyfit(tl,a.data,4)
+        p = np.poly1d(z)
+        a.data += -1*p(tl)
+        #print np.mean(a.data)
+        a.data += -1*np.mean(a.data)
+        a_max = np.abs(a.data).max()
+        a.normalize()
+        a.data *= 0.7
+        gcarc = tr.stats.sac['gcarc']
+        az = tr.stats.sac['az']
+        h = tr.stats.sac['evdp']
+
+        lmax.append(a_max)
+        axl.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+        axl.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+        axl.text(5,2*idx+0.44,r'$az =$'+str(np.round(az,2))+r'$^{\circ}$',size=6)
+        axl.text(-14,2*idx+0.44,name,size=6)
+        #axl.text(1.5,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+
+    for idx,tr in enumerate(q):
+        name = tr.stats.station
+        a = seispy.data.phase_window(tr,['S'],window=(-30,30))
+        env = obspy.signal.filter.envelope(a.data)
+        a_max = env.max()
+        #a_max = np.abs(a.data).max()
+        a.normalize()
+        a.data *= 0.9
+        gcarc = tr.stats.sac['gcarc']
+        az = tr.stats.sac['az']
+        h = tr.stats.sac['evdp']
+        tl = np.linspace(-30,30,num=len(a.data))
+        axsv.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+        #axsv.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+        #axsv.text(-14,2*idx+0.44,name,size=6)
+        axsv.set_xlim(-30,30)
+        axsv.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+        axsv.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
+
+    for idx,tr in enumerate(t):
+        name = tr.stats.station
+        a = seispy.data.phase_window(tr,['S'],window=(-30,30))
+        env = obspy.signal.filter.envelope(a.data)
+        a_max = env.max()
+        #a_max = np.abs(a.data).max()
+        a.normalize()
+        a.data *= 0.9
+        gcarc = tr.stats.sac['gcarc']
+        az = tr.stats.sac['az']
+        h = tr.stats.sac['evdp']
+        tl = np.linspace(-30,30,num=len(a.data))
+        axsh.plot(tl,2.0*idx+a.data,color='k',lw=0.5)
+        #axsh.text(-9,2*idx+0.44,r'$\Delta =$'+str(np.round(gcarc,1))+r'$^{\circ}$',size=6)
+        #axsh.text(7,2*idx+0.44,r'$az =$'+str(np.round(az,1))+r'$^{\circ}$',size=6)
+        #axsh.text(-14,2*idx+0.44,name,size=6)
+        axsh.set_xlim(-30,30)
+        axsh.text(-20,2*idx+0.44,str(int(a_max))+'$nm$',size=6)
+        axsh.text(20,2*idx+0.44,r'$\alpha=$'+str(np.round(int(a_max)/lmax[idx],1)),size=6)
+
+    plt.figtext(0.08,0.94,'(a)',size=7)
+    plt.figtext(0.38,0.94,'(b)',size=7)
+    plt.figtext(0.65,0.94,'(c)',size=7)
+    p = patches.Rectangle((-2.0, -1.0), 5.0, 14.0,alpha=0.1,linewidth=None)
+    axl.add_patch(p)
+
+wave_plot()
 plt.savefig('S1800P_L.pdf')
 call('evince S1800P_L.pdf',shell=True)
 
