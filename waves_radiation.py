@@ -6,7 +6,7 @@
 File Name : waves_radiation.py
 Purpose : Combination of S1750P_L and radiation_plot.py
 Creation Date : 15-04-2017
-Last Modified : Sat 15 Apr 2017 06:15:31 PM EDT
+Last Modified : Sun 16 Apr 2017 11:50:46 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -74,11 +74,11 @@ def setup_figure():
     plt.figtext(0.38,0.30,'(e)',size=7)
     plt.figtext(0.65,0.30,'(f)',size=7)
 
-    plt.figtext(0.16,0.25,r'$S_{1750}P$',size=7,color='white')
-    plt.figtext(0.46,0.26,'$S$',size=7,color='white')
-    plt.figtext(0.44,0.23,'$S_{1750}P$',size=7,color='white')
-    plt.figtext(0.73,0.26,'$S$',size=7,color='black')
-    plt.figtext(0.71,0.23,'$S_{1750}P$',size=7,color='black')
+    plt.figtext(0.23,0.25,r'$S_{1750}P$',size=6,color='black')
+    plt.figtext(0.46,0.26,'$S$',size=6,color='black')
+    plt.figtext(0.45,0.23,'$S_{1750}P$',size=6,color='black')
+    plt.figtext(0.73,0.26,'$S$',size=6,color='white')
+    plt.figtext(0.72,0.23,'$S_{1750}P$',size=6,color='white')
 
     return fig,axl,axsh,axsv,axlrad,axshrad,axsvrad
 
@@ -211,17 +211,17 @@ def beachball(homedir,ax1,ax2,ax3):
         sv_coords = stereonet_coords(Mxyz,find_sv_amp)
         sh_coords = stereonet_coords(Mxyz,find_sh_amp)
         plot_coords(p_coords,ax1)
-        plot_coords(sv_coords,ax2)
-        plot_coords(sh_coords,ax3)
+        plot_coords(sh_coords,ax2)
+        plot_coords(sv_coords,ax3)
         ray_coords_S1750P = get_ray_coordinates(st,['S1750P'])
         ray_coords_S = get_ray_coordinates(st,['S'])
         for ii in ray_coords_S1750P:
-            ax1.pole(90+ii[0],ii[1],markersize=3.0,color='black',mew=0.)
-            ax2.pole(90+ii[0],ii[1],markersize=3.0,color='white',mew=0.)
-            ax3.pole(90+ii[0],ii[1],markersize=3.0,color='black',mew=0.)
+            ax1.pole(90+ii[0],ii[1],markersize=2.0,color='black',mew=0.)
+            ax2.pole(90+ii[0],ii[1],markersize=2.0,color='black',mew=0.)
+            ax3.pole(90+ii[0],ii[1],markersize=2.0,color='white',mew=0.)
         for ii in ray_coords_S:
-            ax2.pole(90+ii[0],ii[1],markersize=3.0,color='white',mew=0.)
-            ax3.pole(90+ii[0],ii[1],markersize=3.0,color='black',mew=0.)
+            ax2.pole(90+ii[0],ii[1],markersize=2.0,color='black',mew=0.)
+            ax3.pole(90+ii[0],ii[1],markersize=2.0,color='white',mew=0.)
 
 
     def stereonet_coords(Mxyz,func):
