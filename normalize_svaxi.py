@@ -6,7 +6,7 @@
 File Name : normalize_svaxi.py
 Purpose : normalize SVaxi radial components to mimic Z component.
 Creation Date : 06-04-2017
-Last Modified : Fri 14 Apr 2017 06:29:47 PM EDT
+Last Modified : Mon 17 Apr 2017 11:10:08 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -21,8 +21,10 @@ import obspy
 import seispy
 
 def main():
-    homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/0327_shareseismos/shareseismos/'
+    #homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/0327_shareseismos/shareseismos/'
+    homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/full_shareseismos/shareseismos/'
     d_rat,s_rat = read_ratio('/home/samhaug/work1/SP_brazil_setup/ratio.dat')
+    read_bootstrap('../SP_brazil_setup',d_rat)
     fig,ax_list = setup_figure(d_rat)
     stprem = obspy.read(homedir+'smoothprem/stv.pk')
     for dir in listdir(homedir):
@@ -39,26 +41,18 @@ def main():
 
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h5_dVs5':
             ax_list[0][0].set_title('h5_dVs5',size=10)
-            ax = plot_amp(st,ax_list[0][0],ang,s_rat)
+            ax = plot_amp(st,ax_list[0][0],ang)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h10_dVs10':
             ax_list[1][1].set_title('h10_dVs10',size=10)
-            ax = plot_amp(st,ax_list[1][1],ang,s_rat)
+            ax = plot_amp(st,ax_list[1][1],ang)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h5_dVs10':
             ax_list[0][1].set_title('h5_dVs10',size=10)
-            ax = plot_amp(st,ax_list[0][1],ang,s_rat)
+            ax = plot_amp(st,ax_list[0][1],ang)
         if dir.split('_')[2]+'_'+dir.split('_')[3] == 'h10_dVs5':
             ax_list[1][0].set_title('h10_dVs5',size=10)
-            ax = plot_amp(st,ax_list[1][0],ang,s_rat)
+            ax = plot_amp(st,ax_list[1][0],ang)
     plt.savefig('normalize_svaxi.pdf')
     call('evince normalize_svaxi.pdf',shell=True)
-
-def read_data():
-    sts = obspy.read('/home/samhaug/work1/SP_brazil_data/q_S_sparse.pk')
-    stp = obspy.read('/home/samhaug/work1/SP_brazil_data/l_S1800P_sparse.pk')
-    for idx,tr in enumerate(sts):
-        sts[idx].data = obspy.signal.filter.envelope(sts[idx].data)
-
-    return sts
 
 def read_synth(dir):
     st = obspy.read(dir+'/stv.pk')
@@ -69,6 +63,12 @@ def read_synth(dir):
     #for tr in st:
     #    tr.data *= 1./np.tan(np.radians(17))
     return st
+
+def read_bootstrap(dir,d_rat):
+    f = h5py.File(dir+'/align_bootstrap_old.h5','r')
+    align_array = f['boot'][...]
+    plt.plot(np.mean(align_array,axis=0)*np.mean(d_rat))
+    plt.show()
 
 def setup_figure(d_rat):
     fig,ax_list = plt.subplots(2,2,figsize=(5,5))
@@ -96,7 +96,7 @@ def setup_figure(d_rat):
 
     return fig,ax_list
 
-def plot_amp(st,ax,ang,s_rat):
+def plot_amp(st,ax,ang):
     a = []
     for tr in st:
         d = seispy.data.phase_window(tr,['S1800P'],window=(-12,8)).data
@@ -104,7 +104,10 @@ def plot_amp(st,ax,ang,s_rat):
     #for ii in b:
     #    ax1.plot(ii,color='k',alpha=0.5)
     #plt.show()
-    ax.errorbar(ang, np.mean(a)*s_rat,yerr=np.std(a),color='k')
+    amax = np.max(a)
+    amin = np.min(a)
+    mid = (amax+amin)/2.
+    ax.errorbar(ang, mid,yerr=amax-mid,color='k')
 
 def read_ratio(ratio_file):
     a = np.genfromtxt(ratio_file)

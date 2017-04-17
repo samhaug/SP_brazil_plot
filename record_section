@@ -39,12 +39,29 @@ phase_dict = {'family': 'serif',
               'size': 8
              }
 
-seispy.plot.section(st,az_color=331,x_lim=(-10,160),ax_grab=ax_sec1,
-                    title=False,y_lim=(43,75))
+#seispy.plot.section(st,az_color=331,x_lim=(-10,160),ax_grab=ax_sec1,
+#                    title=False,y_lim=(43,75))
+for idx,tr in enumerate(st):
+    a = seispy.data.phase_window(st[idx],['P'],window=(-10,160))
+    a.interpolate(5)
+    t = np.linspace(-10,160,num=a.stats.npts)
+    gcarc = a.stats.sac['gcarc']
+    ax_sec1.plot(t,a.data+gcarc,alpha=0.3,color='k',lw=0.5)
 
 ax_sec1.set_xlabel('')
 ax_sec1.xaxis.set_ticklabels([])
 ax_sec1.set_title('Event C200707211327A',size=10)
+ax_sec1.text(0,55,'P',fontdict=phase_dict)
+ax_sec1.text(15,73.5,'PcP',fontdict=phase_dict)
+ax_sec1.text(130,73.5,'pP',fontdict=phase_dict)
+ax_sec1.text(90,73.5,'1750',fontdict=phase_dict)
+ax_sec1.text(65,73.5,'1500',fontdict=phase_dict)
+ax_sec1.text(35,73.5,'1150',fontdict=phase_dict)
+ax_sec1.set_ylim((54,75))
+ax_sec1.set_xlim((-10,160))
+ax_sec1.set_ylabel('Epicentral distance (deg)',size=8)
+ax_sec1.tick_params(axis='y', labelsize=6)
+
 
 ######################################################################
 ####### Plot beachball
@@ -54,16 +71,6 @@ focmec1 = [14,21,-61]
 b = obspy.imaging.beachball.beach(focmec1,xy=(0.5,0.5),width=0.5,linewidth=1,
                                   facecolor='red')
 bbax1.add_collection(b)
-
-ax_sec1.text(0,55,'P',fontdict=phase_dict)
-ax_sec1.text(15,73.5,'PcP',fontdict=phase_dict)
-ax_sec1.text(130,73.5,'pP',fontdict=phase_dict)
-ax_sec1.text(90,73.5,'1800',fontdict=phase_dict)
-ax_sec1.text(65,73.5,'1500',fontdict=phase_dict)
-ax_sec1.text(35,73.5,'1150',fontdict=phase_dict)
-ax_sec1.set_ylim((54,75))
-ax_sec1.set_ylabel('Epicentral distance (deg)',size=8)
-ax_sec1.tick_params(axis='y', labelsize=6)
 
 
 ######################################################################
@@ -102,6 +109,7 @@ plt.figtext(0.05,0.22,'(c)',size=7)
 plt.tight_layout()
 plt.savefig('record_section.pdf')
 call('evince record_section.pdf',shell=True)
+
 
 
 '''
