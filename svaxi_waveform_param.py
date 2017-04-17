@@ -6,7 +6,7 @@
 File Name : svaxi_waveform_param.py
 Purpose : plot change of waveform shape on SVaxi simulation.
 Creation Date : 17-04-2017
-Last Modified : Mon 17 Apr 2017 02:17:05 PM EDT
+Last Modified : Mon 17 Apr 2017 02:45:47 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -34,12 +34,20 @@ def main():
     angle_compare(homedir,prem_st,ax[0][2])
     dist_compare(homedir,prem_st,ax[1][2])
 
-    ax[0][0].set_title('Thickness',size=7)
-    ax[1][0].set_title(r'$\delta V_{S}$',size=7)
-    ax[0][1].set_title(r'$\delta \rho$',size=7)
-    ax[1][1].set_title(r'$\delta V_{P}$',size=7)
-    ax[0][2].set_title(r'$\alpha$',size=7)
-    ax[1][2].set_title(r'$Distance$',size=7)
+    plt.figtext(0.3,0.93,'(a)',size=10)
+    plt.figtext(0.63,0.93,'(b)',size=10)
+    plt.figtext(0.95,0.93,'(c)',size=10)
+
+    plt.figtext(0.3,0.47,'(d)',size=10)
+    plt.figtext(0.63,0.47,'(e)',size=10)
+    plt.figtext(0.95,0.47,'(f)',size=10)
+
+    ax[0][0].text(-9,0.05,'Thickness (km)',size=7)
+    ax[1][0].text(-9,0.05,r'$\delta V_{S} \ (\%)$',size=7)
+    ax[0][1].text(-9,0.05,r'$\delta \rho \ (\%)$',size=7)
+    ax[1][1].text(-9,0.05,r'$\delta V_{P} \ (\%)$',size=7)
+    ax[0][2].text(-19,0.05,r'$\alpha \ (^{\circ})$',size=7)
+    ax[1][2].text(-9,0.05,r'$Distance \ (^{\circ})$',size=7)
 
     ax[1][0].set_xlabel('Time (s)',size=7)
     ax[1][1].set_xlabel('Time (s)',size=7)
@@ -48,6 +56,7 @@ def main():
     for ax in ax.reshape(ax.size):
         ax.legend(loc='upper left',prop={'size':6},frameon=False)
 
+    plt.tight_layout()
     plt.savefig('svaxi_waveform_param.pdf')
     call('evince svaxi_waveform_param.pdf',shell=True)
 
@@ -55,17 +64,17 @@ def thickness_compare(homedir,prem_st,ax):
     st5 = prepare_stream(homedir,'smslab_a0_h5_dVs5',prem_st)
     a = seispy.data.phase_window(st5[10],['S1800P'],window=(-10,10))
     t = np.linspace(-10,10,num=a.stats.npts)
-    ax.plot(t,a.data+-1*a.data[0],label='5km',lw=0.5)
+    ax.plot(t,a.data+-1*a.data[0],label='5',lw=0.5)
 
     st10 = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
     a = seispy.data.phase_window(st10[10],['S1800P'],window=(-10,10))
     t = np.linspace(-10,10,num=a.stats.npts)
-    ax.plot(t,a.data+-1*a.data[0],label='10km',lw=0.5)
+    ax.plot(t,a.data+-1*a.data[0],label='10',lw=0.5)
 
     st20 = prepare_stream(homedir,'smslab_a0_h20_dVs5',prem_st)
     a = seispy.data.phase_window(st20[10],['S1800P'],window=(-10,10))
     t = np.linspace(-10,10,num=a.stats.npts)
-    ax.plot(t,a.data+-1*a.data[0],label='20km',lw=0.5)
+    ax.plot(t,a.data+-1*a.data[0],label='20',lw=0.5)
 
 def dvs_compare(homedir,prem_st,ax):
     st5 = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
@@ -178,8 +187,6 @@ def setup_figure():
     ax[2].set_xlabel('Time (s)',size=10)
     '''
     return fig,ax
-    plt.tight_layout()
-    plt.show()
 
 def prepare_stream(homedir,dir,prem_st):
     st = obspy.read(homedir+dir+'/stv.pk')
