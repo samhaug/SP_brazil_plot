@@ -6,7 +6,7 @@
 File Name : svaxi_waveform_param.py
 Purpose : plot change of waveform shape on SVaxi simulation.
 Creation Date : 17-04-2017
-Last Modified : Mon 17 Apr 2017 02:45:47 PM EDT
+Last Modified : Mon 17 Apr 2017 05:02:10 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -166,7 +166,7 @@ def dist_compare(homedir,prem_st,ax):
         ax.plot(t,a.data+-1*a.data[0],label=label,lw=0.5)
 
 def setup_figure():
-    fig,ax = plt.subplots(2,3,figsize=(7,5))
+    fig,ax = plt.subplots(2,3,figsize=(6.5,4.5))
     fig.patch.set_visible(False)
 
     for b in ax.reshape(ax.size):
@@ -175,7 +175,7 @@ def setup_figure():
         b.spines['left'].set_visible(False)
         b.yaxis.set_ticklabels([])
         b.yaxis.set_ticks([])
-        b.tick_params(axis='both', which='major', labelsize=7)
+        b.tick_params(axis='both', which='major', labelsize=6)
         b.xaxis.set_ticks_position('bottom')
         b.set_ylim((-0.05,0.05))
     '''

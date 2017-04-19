@@ -3,15 +3,14 @@
 '''
 ==============================================================================
 
-File Name : normalize_svaxi.py
-Purpose : normalize SVaxi radial components to mimic Z component.
-Creation Date : 06-04-2017
-Last Modified : Mon 17 Apr 2017 03:22:34 PM EDT
+File Name : model_space.py
+Purpose : Plot model space search
+Creation Date : 18-04-2017
+Last Modified : Wed 19 Apr 2017 10:22:14 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
 '''
-
 import numpy as np
 from matplotlib import pyplot as plt
 from subprocess import call
@@ -116,9 +115,5 @@ def read_ratio(ratio_file):
     return data_rat,synth_rat
 
 main()
-
-
-
-
 
 
