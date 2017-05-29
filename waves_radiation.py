@@ -6,7 +6,7 @@
 File Name : waves_radiation.py
 Purpose : Combination of S1750P_L and radiation_plot.py
 Creation Date : 15-04-2017
-Last Modified : Sun 16 Apr 2017 11:50:46 AM EDT
+Last Modified : Wed 24 May 2017 01:23:22 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -25,6 +25,8 @@ model = obspy.taup.TauPyModel(model="prem50")
 from obspy.taup import TauPyModel
 import matplotlib.gridspec as gridspec
 import itertools
+from descartes import PolygonPatch
+from shapely.geometry.polygon import Polygon
 
 def main():
     fig,axl,axsh,axsv,axlrad,axshrad,axsvrad = setup_figure()
@@ -222,7 +224,6 @@ def beachball(homedir,ax1,ax2,ax3):
         for ii in ray_coords_S:
             ax2.pole(90+ii[0],ii[1],markersize=2.0,color='black',mew=0.)
             ax3.pole(90+ii[0],ii[1],markersize=2.0,color='white',mew=0.)
-
 
     def stereonet_coords(Mxyz,func):
         r = np.linspace(0,90,num=190)

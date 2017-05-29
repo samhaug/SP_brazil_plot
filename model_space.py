@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search
 Creation Date : 18-04-2017
-Last Modified : Wed 19 Apr 2017 08:49:22 PM EDT
+Last Modified : Thu 20 Apr 2017 03:15:03 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -43,7 +43,7 @@ def vs_plot(ax,homedir,prem_st):
     plot_amp(st,ax,-5)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs10',prem_st)
     plot_amp(st,ax,-10)
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
@@ -56,7 +56,7 @@ def vp_plot(ax,homedir,prem_st):
     plot_amp(st,ax,-5)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp5',prem_st)
     plot_amp(st,ax,5)
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
@@ -71,7 +71,7 @@ def rho_plot(ax,homedir,prem_st):
     plot_amp(st,ax,3)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho5',prem_st)
     plot_amp(st,ax,5)
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
@@ -86,7 +86,7 @@ def thick_plot(ax,homedir,prem_st):
     plot_amp(st,ax,10)
     st = prepare_stream(homedir,'smslab_a0_h20_dVs5',prem_st)
     plot_amp(st,ax,20)
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
@@ -105,7 +105,7 @@ def angle_plot(ax,homedir,prem_st):
     plot_amp(st,ax,15)
     st = prepare_stream(homedir,'smslab_a20_h10_dVs5',prem_st)
     plot_amp(st,ax,20)
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
@@ -121,21 +121,23 @@ def distance_plot(ax,homedir,prem_st):
         dist.append(tr.stats.sac['gcarc'])
     ax.scatter(dist,amp,marker='D',color='k',s=3)
     ax.set_xlim((np.min(dist)-5.,np.max(dist)+5))
-    props = dict(boxstyle='square',facecolor='white',alpha=0.5,lw=0.5)
-    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
+    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
 def setup_figure(d_rat,dirty_amp,dirty_std):
     fig,ax_list = plt.subplots(2,3,figsize=(7,5))
 
-    amp = 0.059*d_rat
-    std = 0.01
+    #amp = 0.059*d_rat
+    #std = 0.01
+    amp = 0.10*d_rat
+    std = 0.0425
     for ax in ax_list.reshape(ax_list.size):
         ax.tick_params(axis='both', which='major', labelsize=6)
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
-        ax.set_ylim((0,0.1))
+        ax.set_ylim((0,0.15))
         ax.axhline(amp,color='k',lw=0.5)
         ax.axhline(dirty_amp,color='r',lw=0.5)
         ax.fill_between(np.linspace(-300,300),amp-std,amp+std,color='gray',alpha=0.2,lw=0)
