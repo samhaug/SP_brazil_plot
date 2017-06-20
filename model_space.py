@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search
 Creation Date : 18-04-2017
-Last Modified : Thu 20 Apr 2017 03:15:03 PM EDT
+Last Modified : Mon 29 May 2017 02:31:29 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -51,62 +51,62 @@ def vs_plot(ax,homedir,prem_st):
 def vp_plot(ax,homedir,prem_st):
     print('Vp plot')
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0)
+    plot_amp(st,ax,0,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp-5',prem_st)
-    plot_amp(st,ax,-5)
+    plot_amp(st,ax,-5,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp5',prem_st)
-    plot_amp(st,ax,5)
+    plot_amp(st,ax,5,multiply=2.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta \rho=0\%$'
+    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
 def rho_plot(ax,homedir,prem_st):
     print('Rho plot')
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0)
+    plot_amp(st,ax,0,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho1',prem_st)
-    plot_amp(st,ax,1)
+    plot_amp(st,ax,1,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho3',prem_st)
-    plot_amp(st,ax,3)
+    plot_amp(st,ax,3,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho5',prem_st)
-    plot_amp(st,ax,5)
+    plot_amp(st,ax,5,multiply=2.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$'
+    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=--10\%$, $\delta V_{P}=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
 def thick_plot(ax,homedir,prem_st):
     print('Thickness plot')
     st = prepare_stream(homedir,'smslab_a0_h2_dVs5',prem_st)
-    plot_amp(st,ax,2)
+    plot_amp(st,ax,2,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h5_dVs5',prem_st)
-    plot_amp(st,ax,5)
+    plot_amp(st,ax,5,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,10)
+    plot_amp(st,ax,10,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h20_dVs5',prem_st)
-    plot_amp(st,ax,20)
+    plot_amp(st,ax,20,multiply=2.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$\alpha=0^{\circ}$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
+    textstr=r'$\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
 def angle_plot(ax,homedir,prem_st):
     print('Angle plot')
     st = prepare_stream(homedir,'smslab_a-20_h10_dVs5',prem_st)
-    plot_amp(st,ax,-20)
+    plot_amp(st,ax,-20,multiply=2.)
     st = prepare_stream(homedir,'smslab_a-10_h10_dVs5',prem_st)
-    plot_amp(st,ax,-10)
+    plot_amp(st,ax,-10,multiply=2.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0)
+    plot_amp(st,ax,0,multiply=2.)
     st = prepare_stream(homedir,'smslab_a10_h10_dVs5',prem_st)
-    plot_amp(st,ax,10)
+    plot_amp(st,ax,10,multiply=2.)
     st = prepare_stream(homedir,'smslab_a15_h10_dVs5',prem_st)
-    plot_amp(st,ax,15)
+    plot_amp(st,ax,15,multiply=2.)
     st = prepare_stream(homedir,'smslab_a20_h10_dVs5',prem_st)
-    plot_amp(st,ax,20)
+    plot_amp(st,ax,20,multiply=2.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$h=10km$, $\delta V_{S}=-5\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
+    textstr=r'$h=10km$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
@@ -131,17 +131,19 @@ def setup_figure(d_rat,dirty_amp,dirty_std):
 
     #amp = 0.059*d_rat
     #std = 0.01
-    amp = 0.10*d_rat
-    std = 0.0425
+    #amp = 0.10*d_rat
+    #std = 0.0425
+    amp = 0.0417370943722*d_rat
+    std = 0.032767920367*d_rat
     for ax in ax_list.reshape(ax_list.size):
         ax.tick_params(axis='both', which='major', labelsize=6)
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
-        ax.set_ylim((0,0.15))
+        ax.set_ylim((0,0.1))
         ax.axhline(amp,color='k',lw=0.5)
-        ax.axhline(dirty_amp,color='r',lw=0.5)
+        #ax.axhline(dirty_amp,color='r',lw=0.5)
         ax.fill_between(np.linspace(-300,300),amp-std,amp+std,color='gray',alpha=0.2,lw=0)
-        ax.fill_between(np.linspace(-300,300),dirty_amp-dirty_std,dirty_amp+dirty_std,color='red',alpha=0.4,lw=0)
+        #ax.fill_between(np.linspace(-300,300),dirty_amp-dirty_std,dirty_amp+dirty_std,color='red',alpha=0.4,lw=0)
         #ax.set_ylim((-1,14))
 
     ax_list[0][1].yaxis.set_ticklabels([])
@@ -180,14 +182,15 @@ def plot_amp(st,ax,ang,**kwargs):
     a = []
     for tr in st:
         d = seispy.data.phase_window(tr,['S1800P'],window=(-12,8)).data
+        d *= multiply
         a.append(d.max()-d.min())
     #for ii in b:
     #    ax1.plot(ii,color='k',alpha=0.5)
     #plt.show()
-    amax = np.max(a)*multiply
-    amin = np.min(a)*multiply
-    mid = ((amax+amin)/2.)*multiply
-    ax.errorbar(ang, mid,yerr=amax-mid,color='k')
+    amax = np.max(a)
+    amin = np.min(a)
+    mid = ((amax+amin)/2.)
+    ax.errorbar(ang, mid,yerr=(amax-mid),color='k')
 
 def read_ratio(ratio_file):
     a = np.genfromtxt(ratio_file)
