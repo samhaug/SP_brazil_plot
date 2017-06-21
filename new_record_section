@@ -17,26 +17,23 @@ A newer version of record_section. use regulargridinterpolate
 def main():
     st = obspy.read('/home/samhaug/work1/SP_brazil_data/record_section.pk')
     #st = obspy.read('/home/samhaug/work1/SP_brazil_data/new_record_section.pk')
-    st.interpolate(3)
-    #fig,ax_sec,ax_vesp,ax_wave = setup_figure()
-    #record_section(st,ax_sec)
-    #vespagram(st,ax_vesp)
-    #wave(st,ax_wave)
-    interp_wave(st)
-    #plt.savefig('new_record_section.pdf')
-    #call('evince new_record_section.pdf',shell=True)
+    st.interpolate(20)
+    fig,ax_sec,ax_vesp = setup_figure()
+    record_section(st,ax_sec)
+    interp_wave(st,ax_vesp)
+    plt.savefig('new_record_section.pdf')
+    call('evince new_record_section.pdf',shell=True)
 
 def setup_figure():
     fig = plt.figure(figsize=(5.5,9))
-    gs = gridspec.GridSpec(100,100)
+    gs = gridspec.GridSpec(80,100)
     ax_sec = plt.subplot(gs[0:60,0:])
     ax_vesp = plt.subplot(gs[61:80,0:])
-    ax_wave = plt.subplot(gs[81:100,0:])
+    #ax_wave = plt.subplot(gs[81:100,0:])
     plt.figtext(0.05,0.97,'(a)',size=7)
-    plt.figtext(0.05,0.4,'(b)',size=7)
-    plt.figtext(0.05,0.22,'(c)',size=7)
+    plt.figtext(0.05,0.24,'(b)',size=7)
     plt.tight_layout()
-    return fig,ax_sec,ax_vesp,ax_wave
+    return fig,ax_sec,ax_vesp
 
 def record_section(st,ax):
     print 'Plot record section'
@@ -51,9 +48,9 @@ def record_section(st,ax):
         ax.plot(t,a.data+a.stats.sac['gcarc'],alpha=0.3,color='k',lw=0.5)
 
     ax.set_xlabel('')
-    ax.xaxis.set_ticklabels([])
-    ax.set_title('Event C200707211327A',size=10)
-    ax.text(0,55,'P',fontdict=phase_dict)
+    #ax.xaxis.set_ticklabels([])
+    #ax.set_title('Event C200707211327A',size=10)
+    ax.text(73.5,55,'P',fontdict=phase_dict)
     ax.text(15,73.5,'PcP',fontdict=phase_dict)
     ax.text(130,73.5,'pP',fontdict=phase_dict)
     ax.text(90,73.5,'1750',fontdict=phase_dict)
@@ -63,34 +60,15 @@ def record_section(st,ax):
     ax.set_xlim((-10,160))
     ax.set_ylabel('Epicentral distance (deg)',size=8)
     ax.tick_params(axis='y', labelsize=6)
-
-def vespagram(st,ax):
-    print 'Plot Vespagram'
-    st = seispy.filter.range_filter(st,(50,68))
-    image1 = seispy.plot.vespagram(st,ax_grab=ax,title=False,x_lim=(-10,160),
-                                   cmap='seismic')
-    ax.set_ylabel('Slowness (sec/deg)',size=8)
-    ax.tick_params(axis='y', labelsize=6)
-    ax.yaxis.set_ticklabels([4.7,5.2,5.7,6.2,6.7,7.2,7.7])
-    ax.xaxis.set_ticklabels([])
-    return image1
-
-def wave(st,ax):
-    coord_list = [536.881048387, 59.3697916667, 5478.16532258, 71.34375]
-    section = seispy.plot.stack_amp(st,coord_list=coord_list)
-    t = np.linspace(-10,160,num=len(section))
-    ax.plot(t,2.3*section,color='k',lw=0.5)
-    ax.set_xlim(-10,160)
-    ax.grid(alpha=0.3)
-    ax.set_ylim((-1,1))
-    ax.yaxis.set_ticklabels([])
-    ax.set_xlabel('Seconds after P',size=10)
-    ax.tick_params(axis='y', labelsize=6)
     ax.tick_params(axis='x', labelsize=6)
 
-def interp_wave(st):
+def interp_wave(st,ax_vesp):
     stp = st.copy()
     stn = st.copy()
+    ax_vesp.tick_params(axis='y', labelsize=6)
+    #ax_wave.tick_params(axis='y', labelsize=6)
+    ax_vesp.tick_params(axis='x', labelsize=6)
+    #ax_wave.tick_params(axis='x', labelsize=6)
 
     def stack_st(st):
         a = []
@@ -103,8 +81,9 @@ def interp_wave(st):
         gc = []
         for tr in st:
             gc.append(tr.stats.sac['gcarc'])
+        mid = (np.max(gc)+np.min(gc))/2.
         p = model.get_travel_times(st[0].stats.sac['evdp'],
-                                  np.mean(gc),phase)[0]
+                                  mid,phase)[0]
         p_s = p.ray_param_sec_degree
         t = p.time
         return t,p_s
@@ -123,20 +102,93 @@ def interp_wave(st):
     vesp = np.vstack((np.array(slowness_pos[::-1]),np.array(slowness_neg)))
     x = np.linspace(-60,1200,num=vesp.shape[1])
     y = p_s+np.linspace(-3,3,num=vesp.shape[0])
-    plt.imshow(vesp,aspect='auto',cmap='seismic',
-               clim=(vesp.min()*0.2,vesp.max()*0.2),
-                     extent=[-60,1200,y.min(),y.max()])
+    ax_vesp.imshow(vesp,aspect='auto',cmap='seismic',
+                   clim=(vesp.min()*0.15,vesp.max()*0.15),
+                   extent=[-60,1200,y.min(),y.max()])
+
+    slowness_list = []
+    for ii in np.linspace(700,2500,num=10):
+        ti,pi = find_slow(['S'+str(ii)+'P'])
+        slowness_list.append([ti-t,pi])
+    slow_array = np.array(slowness_list)
+    p = np.poly1d(np.polyfit(slow_array[:,0],slow_array[:,1],3))
+    rg = RegularGridInterpolator((y,x),vesp)
+    x = np.linspace(-50,200,num=10000)
+    ax_vesp.plot(x,p(x),color='k',alpha=0.5,ls='--')
+    #ax_vesp.plot(x,p(x)+0.1,color='k',alpha=0.5,ls='--')
+    wave = rg(np.hstack((np.transpose([p(x)+0.1]),np.transpose([x]))))
+    #ax_wave.plot(x,wave/wave.max(),lw=0.5,color='k')
+    ax_vesp.set_xlim(-10,160)
+    ax_vesp.set_xlabel('Time (s)',size=8)
+    ax_vesp.set_ylabel('Slowness (s/deg)',size=8)
+    ax_vesp.set_ylim(4,8)
+    #ax_wave.set_xlim(-10,160)
+
+def vespagram(st,ax):
+    print 'Plot Vespagram'
+    st = seispy.filter.range_filter(st,(50,68))
+    image1 = seispy.plot.vespagram(st,ax_grab=ax,title=False,x_lim=(-10,160),
+                                   cmap='seismic')
+    print image1
+    ax.set_ylabel('Slowness (sec/deg)',size=8)
+    ax.tick_params(axis='y', labelsize=6)
+    ax.yaxis.set_ticklabels([4.7,5.2,5.7,6.2,6.7,7.2,7.7])
+    ax.xaxis.set_ticklabels([])
+    return image1
+
+def wave(st,ax):
+    coord_list = [536.881048387, 59.3697916667, 5478.16532258, 71.34375]
+    section = seispy.plot.stack_amp(st,coord_list=coord_list)
+    t = np.linspace(-10,160,num=len(section))
+    ax.plot(t,2.3*section,color='k',lw=0.5)
+    ax.set_xlim(-10,160)
+    ax.grid(alpha=0.3)
+    #ax.set_ylim((-1,1))
+    ax.yaxis.set_ticklabels([])
+    ax.set_xlabel('Seconds after P',size=10)
+    ax.tick_params(axis='y', labelsize=6)
+    ax.tick_params(axis='x', labelsize=6)
+
+def interp_wave_2(st,vesp,ax):
+    stp = st.copy()
+    stn = st.copy()
+
+    def find_slow(phase):
+        gc = []
+        for tr in st:
+            gc.append(tr.stats.sac['gcarc'])
+        print np.mean(gc)
+        print (np.max(gc)-np.min(gc))/2.
+        mid = (np.max(gc)-np.min(gc))/2.
+        p = model.get_travel_times(st[0].stats.sac['evdp'],
+                                  mid,phase)[0]
+        p_s = p.ray_param_sec_degree
+        t = p.time
+        return t,p_s
+    t,p_s = find_slow(['P'])
+
     plt.scatter(0,p_s)
     #plt.show()
 
-    #rg = RegularGridInterpolator((y,x),vesp)
-    for ii in np.linspace(700,2500,num=10):
+    slowness_list = []
+    for ii in np.linspace(700,2400,num=10):
         ti,pi = find_slow(['S'+str(ii)+'P'])
-        plt.scatter(ti-t,pi+0.05)
+        plt.scatter(ti-t,pi)
+        slowness_list.append([ti-t,pi])
+    slow_array = np.array(slowness_list)
+    p = np.poly1d(np.polyfit(slow_array[:,0],slow_array[:,1],3))
+    y = np.linspace(p_s-1.5,p_s+1.5,num=vesp.shape[0])
+    x = np.linspace(-10,160,num=vesp.shape[1])
+    rg = RegularGridInterpolator((y,x),vesp)
+    x = np.linspace(-50,200,num=10000)
+    plt.plot(x,p(x))
+    #print np.hstack((np.transpose([p(x)]),np.transpose([x]))).shape
+    #rg(np.hstack((np.transpose([x]),np.transpose([p(x)]))))
+    wave = rg(np.hstack((np.transpose([p(x)]),np.transpose([x]))))
+    #print rg(np.array([[6.2,-50.],[4.3,200.]]))
+    #print rg(np.array([[-50.,6.2],[200.,4.3]]))
     plt.show()
-
-
-
-
+    plt.plot(wave)
+    plt.show()
 
 main()
