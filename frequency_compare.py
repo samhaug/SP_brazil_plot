@@ -6,7 +6,7 @@
 File Name : frequency_compare.py
 Purpose : compare conversion amplitude as fcn of frequency
 Creation Date : 29-05-2017
-Last Modified : Mon 29 May 2017 12:16:32 PM EDT
+Last Modified : Thu 22 Jun 2017 01:57:57 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
