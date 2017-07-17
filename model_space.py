@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search
 Creation Date : 18-04-2017
-Last Modified : Mon 29 May 2017 02:31:29 PM EDT
+Last Modified : Mon 17 Jul 2017 11:38:41 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -23,7 +23,7 @@ def main():
     homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/full_shareseismos/shareseismos/'
     prem_st = read_prem(homedir)
     d_rat,s_rat = read_ratio('/home/samhaug/work1/SP_brazil_setup/ratio.dat')
-    read_bootstrap('../SP_brazil_setup',d_rat)
+    #read_bootstrap('../SP_brazil_setup',d_rat)
     dirty_amp,dirty_std = read_dirty()
     fig,ax_list = setup_figure(d_rat,dirty_amp,dirty_std)
 
