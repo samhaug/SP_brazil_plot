@@ -4,9 +4,9 @@
 ==============================================================================
 
 File Name : model_space.py
-Purpose : Plot model space search
+Purpose : Plot model space search with high frequency runs
 Creation Date : 18-04-2017
-Last Modified : Tue 18 Jul 2017 11:36:15 AM EDT
+Last Modified : Tue 18 Jul 2017 05:11:54 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -20,29 +20,38 @@ import obspy
 import seispy
 
 def main():
+    #homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/high_freq/'
     homedir = '/home/samhaug/work1/SP_brazil_sims/SVaxi/full_shareseismos/shareseismos/'
-    prem_st = read_prem(homedir)
-    d_rat,s_rat = read_ratio('/home/samhaug/work1/SP_brazil_setup/ratio.dat')
+
+    #prem_st = read_prem(homedir)
+    #d_rat,s_rat = read_ratio('/home/samhaug/work1/SP_brazil_setup/ratio.dat')
     #read_bootstrap('../SP_brazil_setup',d_rat)
-    dirty_amp,dirty_std = read_dirty()
-    fig,ax_list = setup_figure(d_rat,dirty_amp,dirty_std)
+    #dirty_amp,dirty_std = read_dirty()
+    st_data = obspy.read('/home/samhaug/work1/SP_brazil_setup/stz_amplitude_processed.pk')
+    st_data.filter('lowpass',freq=1./3,zerophase=True)
+    plt.show()
 
-    vs_plot(ax_list[0][0],homedir,prem_st)
-    vp_plot(ax_list[0][1],homedir,prem_st)
-    rho_plot(ax_list[0][2],homedir,prem_st)
-    thick_plot(ax_list[1][0],homedir,prem_st)
-    angle_plot(ax_list[1][2],homedir,prem_st)
-    distance_plot(ax_list[1][1],homedir,prem_st)
 
-    plt.savefig('model_space.pdf')
-    call('evince model_space.pdf',shell=True)
+    fig,ax_list = setup_figure(st_data)
 
-def vs_plot(ax,homedir,prem_st):
+    vs_plot(ax_list[0][0],homedir)
+    #vp_plot(ax_list[0][1],homedir,prem_st)
+    #rho_plot(ax_list[0][2],homedir,prem_st)
+    thick_plot(ax_list[1][0],homedir)
+    angle_plot(ax_list[1][2],homedir)
+    distance_plot(ax_list[1][1],homedir)
+
+    plt.savefig('LF_model_space.pdf')
+    call('evince LF_model_space.pdf',shell=True)
+
+def vs_plot(ax,homedir):
     print('Vs plot')
-    st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,-5)
-    st = prepare_stream(homedir,'smslab_a0_h10_dVs10',prem_st)
-    plot_amp(st,ax,-10)
+    amps = prepare_stream(homedir,'smslab_a0_h10_dVs5')
+    plot_amp(amps,ax,-5)
+    #plot_amp(amps,ax,-7.5,multiply=7.5/5.)
+    #plot_amp(amps,ax,-10.0,multiply=10.0/5.)
+    amps = prepare_stream(homedir,'smslab_a0_h10_dVs10')
+    plot_amp(amps,ax,-10)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
@@ -76,47 +85,40 @@ def rho_plot(ax,homedir,prem_st):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
-def thick_plot(ax,homedir,prem_st):
+def thick_plot(ax,homedir):
     print('Thickness plot')
-    st = prepare_stream(homedir,'smslab_a0_h2_dVs5',prem_st)
-    plot_amp(st,ax,2,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a0_h5_dVs5',prem_st)
-    plot_amp(st,ax,5,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,10,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a0_h20_dVs5',prem_st)
-    plot_amp(st,ax,20,multiply=2.)
+    amps = prepare_stream(homedir,'smslab_a0_h5_dVs5')
+    plot_amp(amps,ax,5)
+    amps = prepare_stream(homedir,'smslab_a0_h10_dVs5')
+    plot_amp(amps,ax,10)
+    amps = prepare_stream(homedir,'smslab_a0_h20_dVs5')
+    plot_amp(amps,ax,20)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
-def angle_plot(ax,homedir,prem_st):
+def angle_plot(ax,homedir):
     print('Angle plot')
-    st = prepare_stream(homedir,'smslab_a-20_h10_dVs5',prem_st)
-    plot_amp(st,ax,-20,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a-10_h10_dVs5',prem_st)
-    plot_amp(st,ax,-10,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a10_h10_dVs5',prem_st)
-    plot_amp(st,ax,10,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a15_h10_dVs5',prem_st)
-    plot_amp(st,ax,15,multiply=2.)
-    st = prepare_stream(homedir,'smslab_a20_h10_dVs5',prem_st)
-    plot_amp(st,ax,20,multiply=2.)
+    amps = prepare_stream(homedir,'smslab_a-10_h5_dVs5')
+    plot_amp(amps,ax,-10)
+    amps = prepare_stream(homedir,'smslab_a10_h5_dVs5')
+    plot_amp(amps,ax,10)
+    amps = prepare_stream(homedir,'smslab_a0_h5_dVs5')
+    plot_amp(amps,ax,0)
+
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
-def distance_plot(ax,homedir,prem_st):
+def distance_plot(ax,homedir):
     print('Distance plot')
-    st = prepare_stream(homedir,'smslab_a0_h10_dVs10',prem_st)
+    st = obspy.read(homedir+'smslab_a0_h10_dVs10/stv_strip.pk')
     amp = []
     dist = []
-    for tr in st[::1]:
-        d = seispy.data.phase_window(tr,['S1800P'],window=(-12,8)).data
+    for tr in st[7::]:
+        d = tr.data[850:1100]
         amp.append(d.max()-d.min())
         dist.append(tr.stats.sac['gcarc'])
     ax.scatter(dist,amp,marker='D',color='k',s=3)
@@ -126,15 +128,17 @@ def distance_plot(ax,homedir,prem_st):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
-def setup_figure(d_rat,dirty_amp,dirty_std):
+def setup_figure(stream):
     fig,ax_list = plt.subplots(2,3,figsize=(7,5))
+    a = []
+    for tr in stream:
+        a.append(tr.data)
+    m = np.mean(a,axis=0)[1300:1800]
+    s = np.std(a,axis=0)[1300:1800]
+    amp = m.max()-m.min()
+    stdmax = s[np.argmax(m)]
+    stdmin = s[np.argmin(m)]
 
-    #amp = 0.059*d_rat
-    #std = 0.01
-    #amp = 0.10*d_rat
-    #std = 0.0425
-    amp = 0.0417370943722*d_rat
-    std = 0.032767920367*d_rat
     for ax in ax_list.reshape(ax_list.size):
         ax.tick_params(axis='both', which='major', labelsize=6)
         ax.xaxis.set_ticks_position('bottom')
@@ -142,7 +146,8 @@ def setup_figure(d_rat,dirty_amp,dirty_std):
         ax.set_ylim((0,0.1))
         ax.axhline(amp,color='k',lw=0.5)
         #ax.axhline(dirty_amp,color='r',lw=0.5)
-        ax.fill_between(np.linspace(-30,80),amp-std,amp+std,color='gray',alpha=0.2,lw=0)
+        ax.fill_between(np.linspace(-40,80),amp-stdmin,amp+stdmax,
+                        color='gray',alpha=0.2,lw=0)
         #ax.fill_between(np.linspace(-300,300),dirty_amp-dirty_std,dirty_amp+dirty_std,color='red',alpha=0.4,lw=0)
         #ax.set_ylim((-1,14))
 
@@ -177,20 +182,10 @@ def setup_figure(d_rat,dirty_amp,dirty_std):
 
     return fig,ax_list
 
-def plot_amp(st,ax,ang,**kwargs):
-    multiply = kwargs.get('multiply',1.)
-    a = []
-    for tr in st:
-        d = seispy.data.phase_window(tr,['S1800P'],window=(-12,8)).data
-        d *= multiply
-        a.append(d.max()-d.min())
-    #for ii in b:
-    #    ax1.plot(ii,color='k',alpha=0.5)
-    #plt.show()
-    amax = np.max(a)
-    amin = np.min(a)
-    mid = ((amax+amin)/2.)
-    ax.errorbar(ang, mid,yerr=(amax-mid),color='k')
+def plot_amp(amps,ax,ang,**kwargs):
+    m = kwargs.get('multiply',1.)
+    ax.errorbar(ang,m*np.mean(amps),
+                yerr=(m*np.max(amps)-m*np.mean(amps)),color='k')
 
 def read_ratio(ratio_file):
     a = np.genfromtxt(ratio_file)
@@ -198,11 +193,13 @@ def read_ratio(ratio_file):
     synth_rat = np.mean(a[:,2])
     return data_rat,synth_rat
 
-def prepare_stream(homedir,dir,prem_st):
-    st = obspy.read(homedir+dir+'/stv.pk')
-    for idx, tr in enumerate(st):
-        st[idx].data = prem_st[idx].data-st[idx].data
-    return st
+def prepare_stream(homedir,dir):
+    st = obspy.read(homedir+dir+'/stv_strip.pk')
+    amps = []
+    for tr in st[7::]:
+        amps.append(tr.data[850:1100].max()-tr.data[850:1100].min())
+
+    return amps
 
 def read_prem(homedir):
     st = obspy.read(homedir+'smoothprem/stv.pk')

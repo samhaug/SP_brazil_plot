@@ -6,7 +6,7 @@
 File Name : data_synth_wave_compare.py
 Purpose : figure for directly comparing synth/data waveforms.
 Creation Date : 22-06-2017
-Last Modified : Mon 17 Jul 2017 04:17:19 PM EDT
+Last Modified : Mon 17 Jul 2017 04:58:39 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -33,17 +33,17 @@ def main():
     t_dat,mean_dat = remove_trend(t_dat,mean_dat)
     fig,ax = setup_figure()
     plt.tight_layout()
-    ax[0][0].plot(t_dat,mean_dat,color='k',alpha=0.5,lw=1.5)
+    ax[0][1].plot(t_dat,mean_dat,color='k',alpha=0.5,lw=1.5)
     ax[1][0].plot(t_dat,mean_dat,color='k',alpha=0.5,lw=1.5)
     ax[1][1].plot(t_dat,mean_dat,color='k',alpha=0.5,lw=1.5)
 
     t,wave = setup_sv(dirname+'smslab_a0_h10_dVs10/stv_strip.pk')
     t,wave = remove_trend(t,wave,degree=2)
-    ax[0][0].plot(t,wave,lw=0.5,label='dVs=-10%')
-    ax[0][0].plot(t,wave*-1,lw=0.5,label='dVs=10%')
-    ax[0][0].plot(t,wave/-2.,lw=0.5,label='dVs=-5%')
-    ax[0][0].legend(loc='upper left',prop={'size':6},frameon=False)
-    ax[0][0].set_xlabel('Time (s)',size=6)
+    ax[0][1].plot(t,wave,lw=0.5,label='dVs=-10%')
+    ax[0][1].plot(t,wave*-1,lw=0.5,label='dVs=10%')
+    ax[0][1].plot(t,wave/-2.,lw=0.5,label='dVs=-5%')
+    ax[0][1].legend(loc='upper left',prop={'size':6},frameon=False)
+    ax[0][1].set_xlabel('Time (s)',size=6)
 
     t,wave = setup_sv(dirname+'smslab_a0_h2_dVs10/stv_strip.pk')
     t,wave = remove_trend(t,wave,degree=2)
@@ -128,9 +128,9 @@ def setup_figure():
         b.get_xticklines()[0].set_visible(False)
         b.get_xticklines()[-2].set_visible(False)
 
-    ax[0][1].spines['bottom'].set_visible(False)
-    ax[0][1].xaxis.set_ticklabels([])
-    ax[0][1].xaxis.set_ticks([])
+    ax[0][0].spines['bottom'].set_visible(False)
+    ax[0][0].xaxis.set_ticklabels([])
+    ax[0][0].xaxis.set_ticks([])
     return fig,ax
 
 main()
