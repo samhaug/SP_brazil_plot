@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search with high frequency runs
 Creation Date : 18-04-2017
-Last Modified : Tue 18 Jul 2017 03:04:16 PM EDT
+Last Modified : Tue 08 Aug 2017 06:20:46 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -41,22 +41,25 @@ def main():
 def vs_plot(ax,homedir):
     print('Vs plot')
     amps = prepare_stream(homedir,'smslab_a0_h5_dVs5')
-    plot_amp(amps,ax,-5)
+    plot_amp(amps,ax,-5,multiply=1.)
     amps = prepare_stream(homedir,'smslab_a0_h5_dVs10')
-    plot_amp(amps,ax,-10)
+    plot_amp(amps,ax,-10,multiply=1.)
+    amps = prepare_stream(homedir,'smslab_a0_h5_dVs15')
+    plot_amp(amps,ax,-15,multiply=1.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
+    textstr=r'$h=5km$, $\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
+    #ax.axvspan(0.25,-2,alpha=0.2,color='green',lw=0)
 
 def vp_plot(ax,homedir,prem_st):
     print('Vp plot')
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0,multiply=2.)
+    plot_amp(st,ax,0,multiply=1.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp-5',prem_st)
-    plot_amp(st,ax,-5,multiply=2.)
+    plot_amp(st,ax,-5,multiply=1.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp5',prem_st)
-    plot_amp(st,ax,5,multiply=2.)
+    plot_amp(st,ax,5,multiply=1.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
@@ -65,13 +68,13 @@ def vp_plot(ax,homedir,prem_st):
 def rho_plot(ax,homedir,prem_st):
     print('Rho plot')
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5',prem_st)
-    plot_amp(st,ax,0,multiply=2.)
+    plot_amp(st,ax,0,multiply=1.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho1',prem_st)
-    plot_amp(st,ax,1,multiply=2.)
+    plot_amp(st,ax,1,multiply=1.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho3',prem_st)
-    plot_amp(st,ax,3,multiply=2.)
+    plot_amp(st,ax,3,multiply=1.)
     st = prepare_stream(homedir,'smslab_a0_h10_dVs5_drho5',prem_st)
-    plot_amp(st,ax,5,multiply=2.)
+    plot_amp(st,ax,5,multiply=1.)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\alpha=0^{\circ}$, $\delta V_{S}=--10\%$, $\delta V_{P}=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
@@ -85,6 +88,8 @@ def thick_plot(ax,homedir):
     plot_amp(amps,ax,5)
     amps = prepare_stream(homedir,'smslab_a0_h10_dVs10')
     plot_amp(amps,ax,10)
+    amps = prepare_stream(homedir,'smslab_a0_h20_dVs10')
+    plot_amp(amps,ax,20)
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$\alpha=0^{\circ}$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
@@ -92,12 +97,14 @@ def thick_plot(ax,homedir):
 
 def angle_plot(ax,homedir):
     print('Angle plot')
-    amps = prepare_stream(homedir,'smslab_a-10_h5_dVs5')
-    plot_amp(amps,ax,-10)
-    amps = prepare_stream(homedir,'smslab_a10_h5_dVs5')
-    plot_amp(amps,ax,10)
-    amps = prepare_stream(homedir,'smslab_a0_h5_dVs5')
-    plot_amp(amps,ax,0)
+    amps = prepare_stream(homedir,'smslab_a-10_h10_dVs10')
+    plot_amp(amps,ax,-10,multiply=1)
+    amps = prepare_stream(homedir,'smslab_a10_h10_dVs10')
+    plot_amp(amps,ax,10,multiply=1)
+    amps = prepare_stream(homedir,'smslab_a0_h10_dVs10')
+    plot_amp(amps,ax,0,multiply=1)
+    amps = prepare_stream(homedir,'smslab_a20_h10_dVs10')
+    plot_amp(amps,ax,20,multiply=1)
 
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
     textstr=r'$h=10km$, $\delta V_{S}=-10\%$, $\delta V_{P}=0\%$, $\delta \rho = 0\%$'
@@ -151,9 +158,11 @@ def setup_figure(stream):
     #ax_list[0][2].yaxis.set_ticks([])
     ax_list[0][1].yaxis.set_ticks([])
     ax_list[1][1].yaxis.set_ticks([])
+    ax_list[0][0].set_ylabel('Peak-to-peak Amplitude',size=7)
+    ax_list[1][0].set_ylabel('Peak-to-peak Amplitude',size=7)
 
     ax_list[0][0].set_xlabel(r'$\delta V_{S} (\%)$',size=7)
-    ax_list[0][0].set_xlim((0,-15))
+    ax_list[0][0].set_xlim((0,-20))
 
     #ax_list[0][1].set_xlabel(r'$\delta V_{P} (\%)$',size=7)
     #ax_list[0][1].set_xlim((-10,10))
@@ -167,8 +176,11 @@ def setup_figure(stream):
     ax_list[1][1].set_xlabel(r'Distance $(^{\circ})$',size=7)
 
     ax_list[0][1].set_xlabel(r'Angle $(^{\circ})$',size=7)
-    ax_list[0][1].set_xlim((-25,25))
-
+    ax_list[0][1].set_xlim((-15,25))
+    plt.figtext(0.01,0.97,'(a)',size=10)
+    plt.figtext(0.50,0.97,'(b)',size=10)
+    plt.figtext(0.01,0.50,'(c)',size=10)
+    plt.figtext(0.50,0.50,'(d)',size=10)
 
     plt.tight_layout()
 
@@ -176,6 +188,7 @@ def setup_figure(stream):
 
 def plot_amp(amps,ax,ang,**kwargs):
     m = kwargs.get('multiply',1.)
+    print ang,m*np.mean(amps)
     ax.errorbar(ang,m*np.mean(amps),
                 yerr=(m*np.max(amps)-m*np.mean(amps)),color='k')
 

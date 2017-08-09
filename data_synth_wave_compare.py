@@ -6,7 +6,7 @@
 File Name : data_synth_wave_compare.py
 Purpose : figure for directly comparing synth/data waveforms.
 Creation Date : 22-06-2017
-Last Modified : Mon 17 Jul 2017 04:58:39 PM EDT
+Last Modified : Mon 07 Aug 2017 02:56:26 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -26,7 +26,6 @@ rcParams['axes.color_cycle'] = ['#1f77b4','#ff7f0e','#2ca02c',
                                 '#e377c2','#7f7f7f','#bcbd22','#17becf']
 
 def main():
-    #dirname = '/home/samhaug/work1/SP_brazil_sims/SVaxi/full_shareseismos/shareseismos/'
     dirname = '/home/samhaug/work1/SP_brazil_sims/SVaxi/high_freq/'
 
     t_dat,mean_dat,std_dat = setup_data()
@@ -57,13 +56,13 @@ def main():
     ax[1][0].legend(loc='upper left',prop={'size':6},frameon=False)
     ax[1][0].set_xlabel('Time (s)',size=6)
 
-    t,wave = setup_sv(dirname+'smslab_a0_h5_dVs5/stv_strip.pk')
+    t,wave = setup_sv(dirname+'smslab_a0_h10_dVs10/stv_strip.pk',multiply=1.)
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][1].plot(t,-1*wave,lw=0.5,label='0')
-    t,wave = setup_sv(dirname+'smslab_a-10_h5_dVs5/stv_strip.pk',shift=3.5)
+    t,wave = setup_sv(dirname+'smslab_a-10_h10_dVs10/stv_strip.pk',shift=3.5,multiply=1.)
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][1].plot(t,-1*wave,lw=0.5,label='-10')
-    t,wave = setup_sv(dirname+'smslab_a10_h5_dVs5/stv_strip.pk',shift=-5.0)
+    t,wave = setup_sv(dirname+'smslab_a10_h10_dVs10/stv_strip.pk',shift=-5.0,multiply=1.)
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][1].plot(t,-1*wave,lw=0.5,label='10')
     ax[1][1].legend(loc='upper left',prop={'size':6},frameon=False)
@@ -73,7 +72,6 @@ def main():
     call('evince data_synth_wave_compare.pdf',shell=True)
 
 def setup_data():
-    #std = obspy.read('/home/samhaug/work1/SP_brazil_setup/Z_align.pk')
     std = obspy.read('/home/samhaug/work1/SP_brazil_setup/stz_amplitude_processed.pk')
     a = []
     full_time = std[0].stats.npts/std[0].stats.sampling_rate
@@ -101,13 +99,14 @@ def remove_trend(t,mean,**kwargs):
 
 def setup_sv(stdir,**kwargs):
     shift = kwargs.get('shift',0)
+    multiply = kwargs.get('multiply',1.)
     st = obspy.read(stdir)
     len_time = st[0].stats.npts/st[0].stats.sampling_rate
     sr = st[0].stats.sampling_rate
     wave = st[10].data[int(sr*(45+shift)):int(sr*(65+shift))]
     wave += -1*np.mean(wave)
     t = np.linspace(-10,10,num=len(wave))
-    return t,wave
+    return t,wave*multiply
 
 def setup_figure():
     fig,ax = plt.subplots(2,2,figsize=(5.5,5.5))
