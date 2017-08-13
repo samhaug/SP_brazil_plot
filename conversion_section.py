@@ -6,7 +6,7 @@
 File Name : converion_section.py
 Purpose : show record section of the manually aligned S1750P
 Creation Date : 20-06-2017
-Last Modified : Fri 23 Jun 2017 12:30:13 PM EDT
+Last Modified : Fri 11 Aug 2017 05:32:26 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -91,7 +91,7 @@ def setup_figure():
         b.yaxis.set_ticks([])
         b.tick_params(axis='both', which='major', labelsize=6)
         b.xaxis.set_ticks_position('bottom')
-    for b in [ax_sec,ax_over,ax_stack]:
+    for b in [ax_sec,ax_over]:
         b.spines['bottom'].set_visible(False)
         b.xaxis.set_ticklabels([])
         b.xaxis.set_ticks([])
@@ -100,7 +100,7 @@ def setup_figure():
     ax_sec.yaxis.set_ticks_position('left')
     ax_sec.tick_params(axis='both', which='major', labelsize=6)
     ax_sec.set_ylabel(r'Epicentral distance ($\circ$)',size=8)
-    #ax_filt.set_xlabel('Time (s)',size=8)
+    ax_stack.set_xlabel('Time (s)',size=8)
     plt.figtext(0.07,0.93,'(a)',size=8)
     plt.figtext(0.07,0.30,'(b)',size=8)
     plt.figtext(0.07,0.20,'(c)',size=8)

@@ -6,7 +6,7 @@
 File Name : data_synth_wave_compare.py
 Purpose : figure for directly comparing synth/data waveforms.
 Creation Date : 22-06-2017
-Last Modified : Mon 07 Aug 2017 02:56:26 PM EDT
+Last Modified : Fri 11 Aug 2017 01:51:40 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -53,6 +53,9 @@ def main():
     t,wave = setup_sv(dirname+'smslab_a0_h10_dVs10/stv_strip.pk')
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][0].plot(t,-wave,lw=0.5,label='10km')
+    t,wave = setup_sv(dirname+'smslab_a0_h20_dVs10/stv_strip.pk')
+    t,wave = remove_trend(t,wave,degree=2)
+    ax[1][0].plot(t,-wave,lw=0.5,label='20km')
     ax[1][0].legend(loc='upper left',prop={'size':6},frameon=False)
     ax[1][0].set_xlabel('Time (s)',size=6)
 

@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search with high frequency runs
 Creation Date : 18-04-2017
-Last Modified : Tue 08 Aug 2017 06:20:46 PM EDT
+Last Modified : Fri 11 Aug 2017 04:08:56 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -33,23 +33,51 @@ def main():
     #rho_plot(ax_list[0][2],homedir,prem_st)
     thick_plot(ax_list[1][0],homedir)
     angle_plot(ax_list[0][1],homedir)
-    distance_plot(ax_list[1][1],homedir)
+    #distance_plot(ax_list[1][1],homedir)
+    lowf_vp_vs_plot(ax_list[1][1],'/home/samhaug/work1/SP_brazil_sims/SVaxi/full_shareseismos/shareseismos/')
 
     plt.savefig('BB_model_space.pdf')
     call('evince BB_model_space.pdf',shell=True)
 
 def vs_plot(ax,homedir):
     print('Vs plot')
+    y_5 = [0]
+    x_5 = [0]
+    y_10 = [0]
+    x_10 = [0]
     amps = prepare_stream(homedir,'smslab_a0_h5_dVs5')
     plot_amp(amps,ax,-5,multiply=1.)
+    x_5.append(-5)
+    y_5.append(np.mean(amps))
+    plot_amp(amps,ax,-5,multiply=1.2916,color='green')
+    x_10.append(-5)
+    y_10.append(np.mean(amps)*1.2916)
+
     amps = prepare_stream(homedir,'smslab_a0_h5_dVs10')
     plot_amp(amps,ax,-10,multiply=1.)
+    x_5.append(-10)
+    y_5.append(np.mean(amps))
+    plot_amp(amps,ax,-10,multiply=1.2916,color='green')
+    x_10.append(-10)
+    y_10.append(np.mean(amps)*1.2916)
+
     amps = prepare_stream(homedir,'smslab_a0_h5_dVs15')
     plot_amp(amps,ax,-15,multiply=1.)
+    x_5.append(-15)
+    y_5.append(np.mean(amps))
+    plot_amp(amps,ax,-15,multiply=1.2916,color='green')
+    x_10.append(-15)
+    y_10.append(np.mean(amps)*1.2916)
+
     props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
-    textstr=r'$h=5km$, $\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
+    textstr=r'$\alpha=0^{\circ}$, $\delta V_{P}=0\%$, $\delta \rho=0\%$'
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
+    ax.plot(np.unique(x_5), np.poly1d(np.polyfit(x_5, y_5, 1))(np.unique(x_5)),
+            color='k',alpha=0.5,ls='--')
+    ax.plot(np.unique(x_10), np.poly1d(np.polyfit(x_10, y_10, 1))(np.unique(x_10)),color='g',alpha=0.5,ls='--')
+    ax.text(-12,0.064,'h=5km',color='k',rotation=45,size=6)
+    ax.text(-12,0.084,'h=10km',color='g',rotation=50,size=6)
     #ax.axvspan(0.25,-2,alpha=0.2,color='green',lw=0)
 
 def vp_plot(ax,homedir,prem_st):
@@ -127,6 +155,27 @@ def distance_plot(ax,homedir):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
             verticalalignment='top', bbox=props)
 
+def lowf_vp_vs_plot(ax,homedir):
+    print('lowf_vp_vs')
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5_drho1')
+    plot_amp(amps,ax,1,multiply=1)
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5_drho3')
+    plot_amp(amps,ax,3,multiply=1)
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5_drho5')
+    plot_amp(amps,ax,5,multiply=1)
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp5')
+    plot_amp(amps,ax,5,multiply=1,color='g')
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5_dVp-5')
+    plot_amp(amps,ax,-5,multiply=1,color='g')
+    amps = lowf_prepare_stream(homedir,'smslab_a0_h10_dVs5')
+    plot_amp(amps,ax,0,multiply=1,color='g')
+    ax.set_xlim(-10,10)
+
+    props = dict(boxstyle='square',facecolor='white',alpha=1.0,lw=0.5)
+    textstr=r'$h=10km$, $\delta V_{S}=-5\%$, $\alpha=0^{\circ}$'
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=5,
+            verticalalignment='top', bbox=props)
+
 def setup_figure(stream):
     #fig,ax_list = plt.subplots(2,3,figsize=(7,5))
     fig,ax_list = plt.subplots(2,2,figsize=(5,5))
@@ -173,7 +222,7 @@ def setup_figure(stream):
     ax_list[1][0].set_xlabel('Thickness (km)',size=7)
     ax_list[1][0].set_xlim((0,25))
 
-    ax_list[1][1].set_xlabel(r'Distance $(^{\circ})$',size=7)
+    ax_list[1][1].set_xlabel(r'dVp/drho $\%$',size=7)
 
     ax_list[0][1].set_xlabel(r'Angle $(^{\circ})$',size=7)
     ax_list[0][1].set_xlim((-15,25))
@@ -188,9 +237,12 @@ def setup_figure(stream):
 
 def plot_amp(amps,ax,ang,**kwargs):
     m = kwargs.get('multiply',1.)
+    color = kwargs.get('color','k')
     print ang,m*np.mean(amps)
+    #ax.errorbar(ang,m*np.mean(amps),
+    #            yerr=(m*np.max(amps)-m*np.mean(amps)),color=color)
     ax.errorbar(ang,m*np.mean(amps),
-                yerr=(m*np.max(amps)-m*np.mean(amps)),color='k')
+                yerr=(np.max(amps)-np.mean(amps)),color=color)
 
 def read_ratio(ratio_file):
     a = np.genfromtxt(ratio_file)
@@ -203,6 +255,13 @@ def prepare_stream(homedir,dir):
     amps = []
     for tr in st[7::]:
         amps.append(tr.data[2000:4500].max()-tr.data[2000:4500].min())
+    return amps
+
+def lowf_prepare_stream(homedir,dir):
+    st = obspy.read(homedir+dir+'/stv_strip.pk')
+    amps = []
+    for tr in st[7::]:
+        amps.append(tr.data[850:1100].max()-tr.data[850:1100].min())
     return amps
 
 def read_prem(homedir):
