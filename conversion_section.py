@@ -6,7 +6,7 @@
 File Name : converion_section.py
 Purpose : show record section of the manually aligned S1750P
 Creation Date : 20-06-2017
-Last Modified : Fri 11 Aug 2017 05:32:26 PM EDT
+Last Modified : Thu 17 Aug 2017 10:11:05 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -38,6 +38,7 @@ def plot_section(st,ax):
     t = np.linspace(-len_time/2.,len_time/2.,num=st[0].stats.npts)
     for tr in st:
         ax.plot(t,tr.data+tr.stats.sac['gcarc'],color='k',lw=0.5)
+    #ax.set_xlim(int(t[0]),int(t[-1]))
     ax.set_xlim(-25,25)
     ax.set_ylim(55,71)
 
@@ -77,11 +78,11 @@ def plot_filt(st,ax):
     ax.set_xlim(-25,25)
 
 def setup_figure():
-    fig = plt.figure(figsize=(5.5,7))
+    fig = plt.figure(figsize=(5.5,8))
     gs = gridspec.GridSpec(70,100)
-    ax_sec = plt.subplot(gs[0:50,0:])
-    ax_over = plt.subplot(gs[50:60,0:])
-    ax_stack = plt.subplot(gs[60:70,0:])
+    ax_sec = plt.subplot(gs[0:48,0:])
+    ax_over = plt.subplot(gs[50:59,0:])
+    ax_stack = plt.subplot(gs[60:69,0:])
     #ax_filt = plt.subplot(gs[70:80,0:])
     for b in [ax_over,ax_stack]:
         b.spines['top'].set_visible(False)
@@ -99,11 +100,17 @@ def setup_figure():
     ax_sec.spines['right'].set_visible(False)
     ax_sec.yaxis.set_ticks_position('left')
     ax_sec.tick_params(axis='both', which='major', labelsize=6)
-    ax_sec.set_ylabel(r'Epicentral distance ($\circ$)',size=8)
+    ax_sec.set_ylabel(r'Epicentral distance (degrees)',size=8)
     ax_stack.set_xlabel('Time (s)',size=8)
-    plt.figtext(0.07,0.93,'(a)',size=8)
-    plt.figtext(0.07,0.30,'(b)',size=8)
-    plt.figtext(0.07,0.20,'(c)',size=8)
+    #ax_stack.xaxis.set_ticks(np.arange(-20,20,2))
+    major_ticks = np.arange(-25,30,5)
+    minor_ticks = np.arange(-25,26,1)
+    ax_stack.set_xticks(major_ticks)
+    ax_stack.set_xticks(minor_ticks,minor=True)
+    ax_stack.spines['bottom'].set_bounds(-25,25)
+    plt.figtext(0.07,0.93,'(a)',size=7)
+    plt.figtext(0.07,0.30,'(b)',size=7)
+    plt.figtext(0.07,0.20,'(c)',size=7)
     #plt.figtext(0.07,0.18,'(d)',size=8)
     return fig,ax_sec,ax_over,ax_stack
 

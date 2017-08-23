@@ -6,7 +6,7 @@
 File Name : data_synth_wave_compare.py
 Purpose : figure for directly comparing synth/data waveforms.
 Creation Date : 22-06-2017
-Last Modified : Fri 11 Aug 2017 01:51:40 PM EDT
+Last Modified : Thu 17 Aug 2017 03:54:55 PM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -47,9 +47,9 @@ def main():
     t,wave = setup_sv(dirname+'smslab_a0_h2_dVs10/stv_strip.pk')
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][0].plot(t,-wave,lw=0.5,label='2km')
-    t,wave = setup_sv(dirname+'smslab_a0_h5_dVs10/stv_strip.pk')
-    t,wave = remove_trend(t,wave,degree=2)
-    ax[1][0].plot(t,-wave,lw=0.5,label='5km')
+    #t,wave = setup_sv(dirname+'smslab_a0_h5_dVs10/stv_strip.pk')
+    #t,wave = remove_trend(t,wave,degree=2)
+    #ax[1][0].plot(t,-wave,lw=0.5,label='5km')
     t,wave = setup_sv(dirname+'smslab_a0_h10_dVs10/stv_strip.pk')
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][0].plot(t,-wave,lw=0.5,label='10km')
@@ -59,6 +59,7 @@ def main():
     ax[1][0].legend(loc='upper left',prop={'size':6},frameon=False)
     ax[1][0].set_xlabel('Time (s)',size=6)
 
+    '''
     t,wave = setup_sv(dirname+'smslab_a0_h10_dVs10/stv_strip.pk',multiply=1.)
     t,wave = remove_trend(t,wave,degree=2)
     ax[1][1].plot(t,-1*wave,lw=0.5,label='0')
@@ -70,6 +71,10 @@ def main():
     ax[1][1].plot(t,-1*wave,lw=0.5,label='10')
     ax[1][1].legend(loc='upper left',prop={'size':6},frameon=False)
     ax[1][1].set_xlabel('Time (s)',size=6)
+    '''
+    #ax[0][1].xaxis.set_ticks(np.arange(-5,6,1))
+    #ax[1][1].xaxis.set_ticks(np.arange(-5,6,1))
+    #ax[1][0].xaxis.set_ticks(np.arange(-5,6,1))
 
     plt.savefig('data_synth_wave_compare.pdf')
     call('evince data_synth_wave_compare.pdf',shell=True)
@@ -107,6 +112,7 @@ def setup_sv(stdir,**kwargs):
     len_time = st[0].stats.npts/st[0].stats.sampling_rate
     sr = st[0].stats.sampling_rate
     wave = st[10].data[int(sr*(45+shift)):int(sr*(65+shift))]
+    print st[10].stats.sac['gcarc']
     wave += -1*np.mean(wave)
     t = np.linspace(-10,10,num=len(wave))
     return t,wave*multiply
@@ -124,6 +130,7 @@ def setup_figure():
         b.xaxis.set_ticks_position('bottom')
         b.set_xlim(-10,10)
         b.set_ylim(-0.05,0.05)
+        b.xaxis.set_ticks(np.arange(-6,7,1))
         b.spines['bottom'].set_bounds(-5,5)
         b.get_xticklabels()[0].set_visible(False)
         b.get_xticklabels()[-1].set_visible(False)

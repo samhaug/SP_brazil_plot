@@ -47,11 +47,30 @@ def beachball(homedir):
         plot_coords(p_coords,ax1)
         plot_coords(sv_coords,ax2)
         plot_coords(sh_coords,ax3)
-        ray_coords = get_ray_coordinates(st)
-        for ii in ray_coords:
-            ax1.pole(90+ii[0],ii[1],markersize=3.0,color='limegreen',mew=0.)
-            ax2.pole(90+ii[0],ii[1],markersize=3.0,color='limegreen',mew=0.)
-            ax3.pole(90+ii[0],ii[1],markersize=3.0,color='limegreen',mew=0.)
+
+        ray_coords = get_ray_coordinates(st,['S1800P'])
+        ax1.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='limegreen',mew=0.)
+        ax2.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='limegreen',mew=0.)
+        ax3.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='limegreen',mew=0.)
+
+        ray_coords = get_ray_coordinates(st,['S'])
+        ax1.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='red',mew=0.)
+        ax2.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='red',mew=0.)
+        ax3.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='red',mew=0.)
+
+        ray_coords = get_ray_coordinates(st,['P'])
+        ax1.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='yellow',mew=0.)
+        ax2.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='yellow',mew=0.)
+        ax3.pole(90+ray_coords[1][0],ray_coords[1][1],markersize=3.0,
+                 color='yellow',mew=0.)
 
         plt.savefig('radiation_plot.pdf')
         call('evince radiation_plot.pdf',shell=True)
@@ -74,7 +93,7 @@ def beachball(homedir):
         ax.pole(90+coords[:,1],coords[:,0],color='k',marker='o',rasterized=True)
         ax.set_azimuth_ticklabels([])
 
-    def get_ray_coordinates(st):
+    def get_ray_coordinates(st,phase_list):
         model = TauPyModel(model='prem50')
         ray_coord = []
         for tr in st:
@@ -82,7 +101,7 @@ def beachball(homedir):
             gcarc = tr.stats.sac['gcarc']
             arrivals = model.get_travel_times(source_depth_in_km=evdp,
                                               distance_in_degree=gcarc,
-                                              phase_list=['S1800P'])
+                                              phase_list=phase_list)
             ang = arrivals[0].takeoff_angle
             ray_coord.append([tr.stats.sac['az'],ang])
         return ray_coord
