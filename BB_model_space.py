@@ -6,7 +6,7 @@
 File Name : model_space.py
 Purpose : Plot model space search with high frequency runs
 Creation Date : 18-04-2017
-Last Modified : Wed 23 Aug 2017 02:13:34 PM EDT
+Last Modified : Mon 28 Aug 2017 11:41:49 AM EDT
 Created By : Samuel M. Haugland
 
 ==============================================================================
@@ -118,20 +118,53 @@ def thick_plot(ax,homedir):
             verticalalignment='top', bbox=props)
 
 def angle_plot(ax,homedir):
+    x_10 = []
+    y_10 = []
+    x_5 = []
+    y_5 = []
+    x_2 = []
+    y_2 = []
+
     amps = prepare_stream(homedir,'smslab_a-10_h10_dVs10')
+    x_10.append(-10)
+    y_10.append(np.mean(amps))
+    x_5.append(-10)
+    y_5.append(np.mean(amps)*0.5)
+    x_2.append(-10)
+    y_2.append(np.mean(amps)*0.2)
     plot_amp(amps,ax,-10,multiply=1)
     plot_amp(amps,ax,-10,multiply=0.5,color='g')
     plot_amp(amps,ax,-10,multiply=0.2,color='r')
+
     amps = prepare_stream(homedir,'smslab_a10_h10_dVs10')
+    x_10.append(10)
+    y_10.append(np.mean(amps))
+    x_5.append(10)
+    y_5.append(np.mean(amps)*0.5)
+    x_2.append(10)
+    y_2.append(np.mean(amps)*0.2)
     plot_amp(amps,ax,10,multiply=1)
     plot_amp(amps,ax,10,multiply=0.5,color='g')
     plot_amp(amps,ax,10,multiply=0.2,color='r')
-    #plot_amp(amps,ax,10,multiply=0.3,color='b')
+
     amps = prepare_stream(homedir,'smslab_a0_h10_dVs10')
+    x_10.append(0)
+    y_10.append(np.mean(amps))
+    x_5.append(0)
+    y_5.append(np.mean(amps)*0.5)
+    x_2.append(0)
+    y_2.append(np.mean(amps)*0.2)
     plot_amp(amps,ax,0,multiply=1)
     plot_amp(amps,ax,0,multiply=0.5,color='g')
     plot_amp(amps,ax,0,multiply=0.2,color='r')
+
     amps = prepare_stream(homedir,'smslab_a20_h10_dVs10')
+    x_10.append(20)
+    y_10.append(np.mean(amps))
+    x_5.append(20)
+    y_5.append(np.mean(amps)*0.5)
+    x_2.append(20)
+    y_2.append(np.mean(amps)*0.2)
     plot_amp(amps,ax,20,multiply=1)
     plot_amp(amps,ax,20,multiply=0.5,color='g')
     plot_amp(amps,ax,20,multiply=0.2,color='r')
@@ -143,7 +176,17 @@ def angle_plot(ax,homedir):
     #ax.text(0.05,0.50,r'dV_{S}=-10\%')
     ax.text(1.5,0.075,r'$\delta V_{S}=-10\%$',zorder=0,size=7)
     ax.text(1.5,0.025,r'$\delta V_{S}=-5\%$',zorder=0,size=7,color='g')
-    ax.text(1.5,0.01,r'$\delta V_{S}=-2\%$',zorder=0,size=7,color='r')
+    ax.text(1.5,0.007,r'$\delta V_{S}=-2\%$',zorder=0,size=7,color='r')
+    xlin = np.linspace(-20,40,num=100)
+    ax.plot(xlin,
+            np.poly1d(np.polyfit(x_10, y_10, 2))(xlin),
+            color='k',alpha=0.5,ls='--')
+    ax.plot(xlin,
+            np.poly1d(np.polyfit(x_5, y_5, 2))(xlin),
+            color='g',alpha=0.5,ls='--')
+    ax.plot(xlin,
+            np.poly1d(np.polyfit(x_2, y_2, 2))(xlin),
+            color='r',alpha=0.5,ls='--')
 
 def distance_plot(ax,homedir):
     st = obspy.read(homedir+'smslab_a0_h10_dVs10/stv_strip.pk')
